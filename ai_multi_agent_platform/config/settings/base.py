@@ -31,6 +31,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,11 +41,20 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'corsheaders',
+    'django_celery_beat',
     'agents',
     'tasks',
-    'communication'
+    'communication',
+    'accounts',
+    'notifications',
+    'channels',
 ]
-
+AUTH_USER_MODEL = 'accounts.User'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':(
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -126,3 +136,31 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+CELERY_BROKER_URL = ("redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = ("redis://localhost:6379/0")
+
+ASGI_APPLICATION = 'config.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {
+            "hosts": ["redis://127.0.0.1:6379/0"],
+        },
+    },
+}
+CACHES = {
+    "default": {
+        "BACKEND":
+        "django_redis.cache.RedisCache",
+
+        "LOCATION":
+        "redis://127.0.0.1:6379/1",
+
+        "OPTIONS": {
+            "CLIENT_CLASS":
+            "django_redis.client.DefaultClient",
+        }
+    }
+}
