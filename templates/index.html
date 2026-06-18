@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}{% if profile %}{{ profile.name }} — Backend & AI Engineer{% else %}Portfolio{% endif %}{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-lines"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow"><span class="pulse"></span>{{ profile.eyebrow_text }}</div>
+      <h1>{{ profile.name }}</h1>
+      <div class="name-sub">{{ profile.location }}</div>
+      <div class="role-line"><span id="typed-role"></span><span class="cursor-blink"></span></div>
+      <p class="hero-desc">{{ profile.hero_description|safe }}</p>
+      <div class="btn-row">
+        <a href="mailto:{{ profile.email }}" class="btn btn-primary">✉ Get in Touch</a>
+        <a href="#projects" class="btn btn-ghost">View Projects</a>
+      </div>
+      <div class="hero-socials">
+        {% for link in social_links %}
+        <a href="{{ link.url }}" class="social-link" target="_blank" rel="noopener">
+          {% if link.icon_svg %}{{ link.icon_svg|safe }}{% endif %}
+          {% if link.icon_emoji %}{{ link.icon_emoji }}{% endif %}
+          {{ link.name }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div>
+      <div class="terminal">
+        <div class="term-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="term-title">profile.py</span>
+        </div>
+        <div class="term-body">
+          <div class="tl"><span class="t-k">class</span> <span class="t-n">{{ profile.name|cut:" " }}</span>:</div>
+          <div class="tl">&nbsp;&nbsp;<span class="t-k">def</span> <span class="t-n">__init__</span>(self):</div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">role</span> = <span class="t-s">"{{ profile.terminal_role }}"</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">location</span> = <span class="t-s">"{{ profile.location }}"</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">company</span> = <span class="t-s">"{{ profile.terminal_company }}"</span></div>
+          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">stack</span> = [</div>
+          {% for item in profile.terminal_stack_list %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-s">"{{ item }}"</span>{% if not forloop.last %},{% endif %}</div>
+          {% endfor %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;]</div>
+          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">ai_expertise</span> = [</div>
+          {% for item in profile.terminal_ai_list %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-s">"{{ item }}"</span>{% if not forloop.last %},{% endif %}</div>
+          {% endfor %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;]</div>
+          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">open_to_work</span> = <span class="t-n">True</span> <span class="t-c"># ✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+{% if stats %}
+<div class="stats-bar">
+  <div class="stats-inner">
+    {% for stat in stats %}
+    <div class="stat reveal">
+      <div class="stat-num" data-target="{{ stat.number }}" data-show-plus="{{ stat.show_plus|yesno:'true,false' }}">0</div>
+      <div class="stat-label">{{ stat.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- SUMMARY -->
+<section id="summary">
+  <div class="section-inner">
+    <div class="section-label reveal">About Me</div>
+    <h2 class="section-title reveal">Summary</h2>
+    <div class="summary-card reveal">
+      <p class="summary-text">{{ profile.summary_text|safe }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+{% if skill_categories %}
+<section id="skills">
+  <div class="section-inner">
+    <div class="section-label reveal">Capabilities</div>
+    <h2 class="section-title reveal">Technical <span>Skills</span></h2>
+    <div class="skills-grid">
+      {% for cat in skill_categories %}
+      <div class="skill-card reveal">
+        <div class="skill-card-icon">
+            {% if cat.icon_svg %}{{ cat.icon_svg|safe }}{% else %}<i class="fa-solid fa-code"></i>{% endif %}
+        </div>
+        <div class="skill-card-title">{{ cat.title }}</div>
+        <div class="skill-tags">
+          {% for skill in cat.skills.all %}
+          <span class="tag">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- EXPERIENCE -->
+{% if experiences %}
+<section id="experience">
+  <div class="section-inner">
+    <div class="section-label reveal">Work History</div>
+    <h2 class="section-title reveal">Experience</h2>
+
+    {% for exp in experiences %}
+    <div class="exp-item reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-company">{{ exp.company }}</div>
+          <div class="exp-location">📍 {{ exp.location }}</div>
+          <div class="exp-role">⚡ {{ exp.role }}</div>
+        </div>
+        <div class="exp-date">
+          {% if exp.is_current %}<div class="badge">● Present</div>{% endif %}
+          <div>{{ exp.date_display }}</div>
+        </div>
+      </div>
+
+      <p class="exp-intro">{{ exp.intro_text|safe }}</p>
+
+      {% if exp.projects.all %}
+      <div class="exp-subheading">Company Projects</div>
+      <ul class="exp-achievements">
+        {% for proj in exp.projects.all %}
+        <li>
+          <div><strong>{{ proj.title }}</strong> — {{ proj.description }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if exp.achievements.all %}
+      <div class="exp-subheading">Key Contributions</div>
+      <ul class="exp-achievements">
+        {% for ach in exp.achievements.all %}
+        <li>{{ ach.text|safe }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if exp.techs.all %}
+      <div class="exp-tech-row">
+        {% for tech in exp.techs.all %}
+        <span class="tag">{{ tech.name }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+{% endif %}
+
+<!-- PROJECTS -->
+{% if projects %}
+<section id="projects">
+  <div class="section-inner">
+    <div class="section-label reveal">Work</div>
+    <h2 class="section-title reveal">Featured <span>Projects</span></h2>
+    <div class="projects-grid">
+      {% for proj in projects %}
+      <div class="proj-card reveal">
+        {% if proj.cover_image %}
+        <img src="{{ proj.cover_image.url }}" alt="{{ proj.title }}" class="proj-cover">
+        {% endif %}
+        <div class="proj-content">
+          <div class="proj-number">PROJECT — {{ forloop.counter|stringformat:"02d" }}</div>
+          {% if not proj.cover_image %}
+          <div class="proj-icon">
+              {% if proj.icon_svg %}{{ proj.icon_svg|safe }}{% else %}<i class="fa-solid fa-rocket"></i>{% endif %}
+          </div>
+          {% endif %}
+          <div class="proj-name">{{ proj.title }}</div>
+          <div class="proj-desc">{{ proj.description }}</div>
+          <div class="proj-stack">
+            {% for tech in proj.techs.all %}
+            <span class="proj-tag">{{ tech.name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- BLOG -->
+{% if blogs %}
+<section id="blog">
+  <div class="section-inner">
+    <div class="section-label reveal">Insights & Thoughts</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:20px;">
+      <h2 class="section-title reveal" style="margin-bottom:0;">Latest <span>Articles</span></h2>
+      <a href="{% url 'blog_list' %}" class="btn btn-ghost reveal">Explore All Blogs →</a>
+    </div>
+    <div class="blog-grid">
+      {% for blog in blogs %}
+      <a href="{% url 'blog_detail' blog.slug %}" class="blog-card reveal" style="text-decoration:none;">
+        {% if blog.cover_image %}
+        <img src="{{ blog.cover_image.url }}" alt="{{ blog.title }}" class="blog-cover">
+        {% endif %}
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>{{ blog.published_date|date:"M d, Y" }}</span>
+            <span>⏱️ {{ blog.reading_time }} min read</span>
+          </div>
+          {% if not blog.cover_image %}
+          <div class="blog-icon">
+              {% if blog.cover_svg %}{{ blog.cover_svg|safe }}{% else %}<i class="fa-solid fa-newspaper"></i>{% endif %}
+          </div>
+          {% endif %}
+          <div class="blog-title">{{ blog.title }}</div>
+          <div class="blog-excerpt">{{ blog.excerpt }}</div>
+          <div class="blog-tags">
+            {% for tag in blog.tags.all %}
+            <span class="blog-tag">{{ tag.name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- EDUCATION -->
+{% if educations %}
+<section id="education">
+  <div class="section-inner">
+    <div class="section-label reveal">Background</div>
+    <h2 class="section-title reveal">Education</h2>
+    <div class="edu-grid">
+      {% for edu in educations %}
+      <div class="edu-card reveal">
+        <div>
+          <div class="edu-badge">
+              {% if edu.badge_svg %}<span style="margin-right:4px;">{{ edu.badge_svg|safe }}</span>{% else %}<i class="fa-solid fa-graduation-cap"></i> {% endif %}
+              {{ edu.badge_text }}
+          </div>
+          <div class="edu-inst">{{ edu.institution }}</div>
+          <div class="edu-degree">{{ edu.degree }}</div>
+          {% if edu.scores.all %}
+          <div class="edu-scores">
+            {% for score in edu.scores.all %}
+            <span class="edu-score">{{ score.label }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <div class="edu-date-col">
+          <div class="edu-date">{{ edu.date_range }}</div>
+          {% if edu.location %}
+          <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">{{ edu.location }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- MARKETING FUNNEL CTA -->
+{% if profile and profile.funnel_is_active %}
+<section id="cta-funnel" style="background: var(--bg); padding: 80px 5vw;">
+  <div class="funnel-card reveal" style="max-width: 1000px; margin: 0 auto; background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%); border-radius: 24px; padding: 60px 40px; text-align: center; color: #FFFFFF; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25); position: relative; overflow: hidden;">
+    <!-- Decorative background elements -->
+    <div style="position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(30px); pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -50px; right: -50px; width: 250px; height: 250px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(40px); pointer-events: none;"></div>
+
+    <div style="position: relative; z-index: 1;">
+      <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700; margin-bottom: 20px; letter-spacing: -1px; color: #FFFFFF;">{{ profile.funnel_heading }}</h2>
+      <p style="font-size: 18px; line-height: 1.6; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; color: rgba(255,255,255,0.9);">{{ profile.funnel_subheading }}</p>
+      
+      <a href="{{ profile.funnel_button_url }}" class="funnel-btn" style="background: #FFFFFF; color: var(--purple); font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 36px; border-radius: 12px; display: inline-block; text-decoration: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: all 0.3s;">
+        {{ profile.funnel_button_text }}
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="section-label reveal" style="text-align:center;justify-content:center">Let's Connect</div>
+    <h2 class="reveal">{{ profile.contact_heading|safe }}</h2>
+    <p class="reveal">{{ profile.contact_description }}</p>
+    {% if contact_items %}
+    <div class="contact-grid reveal">
+      {% for item in contact_items %}
+      <a href="{{ item.url }}" class="contact-item{% if item.full_width %} full-width{% endif %}">
+        <span class="contact-item-icon">
+            {% if item.icon_svg %}{{ item.icon_svg|safe }}{% else %}<i class="fa-solid fa-envelope"></i>{% endif %}
+        </span>
+        <span>{{ item.label }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="btn-row reveal" style="justify-content:center">
+      <a href="mailto:{{ profile.email }}" class="btn btn-primary">✉ Send a Message</a>
+      {% if profile.phone %}<a href="tel:{{ profile.phone }}" class="btn btn-ghost">📞 Call Me</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Inject typed roles from DB as JSON -->
+<script>
+  window.TYPED_ROLES = {{ typed_roles_json|safe }};
+</script>
+{% endblock %}

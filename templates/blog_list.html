@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Blog | {{ profile.name }}{% endblock %}
+
+{% block content %}
+<section id="blog-list" style="padding-top:120px; min-height:80vh;">
+  <div class="section-inner">
+    <div class="section-label reveal">Insights & Thoughts</div>
+    <h1 class="section-title reveal" style="margin-bottom:40px;">All <span>Articles</span></h1>
+    
+    {% if blogs %}
+    <div class="blog-grid">
+      {% for blog in blogs %}
+      <a href="{% url 'blog_detail' blog.slug %}" class="blog-card reveal" style="text-decoration:none;">
+        {% if blog.cover_image %}
+        <img src="{{ blog.cover_image.url }}" alt="{{ blog.title }}" class="blog-cover">
+        {% endif %}
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>{{ blog.published_date|date:"M d, Y" }}</span>
+            <span>⏱️ {{ blog.reading_time }} min read</span>
+          </div>
+          {% if not blog.cover_image %}
+          <div class="blog-icon">
+              {% if blog.cover_svg %}{{ blog.cover_svg|safe }}{% else %}<i class="fa-solid fa-newspaper"></i>{% endif %}
+          </div>
+          {% endif %}
+          <div class="blog-title">{{ blog.title }}</div>
+          <div class="blog-excerpt">{{ blog.excerpt }}</div>
+          <div class="blog-tags">
+            {% for tag in blog.tags.all %}
+            <span class="blog-tag">{{ tag.name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 60px 0; color: var(--muted);">
+        <i class="fa-solid fa-pen-nib" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+        <p>No blogs published yet. Check back soon!</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
