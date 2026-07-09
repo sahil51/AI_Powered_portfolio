@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from api.routes import chat, health, leads, meetings, memory, security_routes, workflows
+from api.routes import admin, chat, health, leads, meetings, memory, security_routes, workflows
 from application.bootstrap import bootstrap_manager
 from application.context import app_context
 from config.settings import settings
@@ -78,6 +78,7 @@ app.include_router(leads.router)
 app.include_router(memory.router)
 app.include_router(workflows.router)
 app.include_router(security_routes.router)
+app.include_router(admin.router)
 
 
 @app.get("/")

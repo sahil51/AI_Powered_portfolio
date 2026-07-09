@@ -21,6 +21,7 @@ class GraphState(TypedDict):
     current_workflow: Optional[str]
     workflow_state: str
     rag_context: list[str]
+    portfolio_context: str
     response: str
     error: Optional[str]
     next_action: Optional[str]

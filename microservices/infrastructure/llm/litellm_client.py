@@ -17,6 +17,7 @@ class LiteLLMClient:
         self.fallback_chain = [
             settings.llm_primary_model,
             f"cerebras/{settings.cerebras_model}",
+            f"gemini/{settings.gemini_model}",
             f"nvidia/{settings.nvidia_model}",
             f"huggingface/{settings.hf_model}",
         ]

@@ -1,5 +1,7 @@
 import uuid
 
+from sqlalchemy.ext.asyncio import async_sessionmaker
+
 from agents.confirmation.handler import ConfirmationHandler
 from agents.intent.classifier import IntentClassifier
 from agents.state.graph_state import GraphState
@@ -18,6 +20,7 @@ class ConversationService:
         short_term_memory: ShortTermMemory,
         long_term_memory: LongTermMemory,
         retrieval_service: RetrievalService,
+        session_factory: async_sessionmaker | None = None,
     ):
         self.llm = llm
         self.short_term_memory = short_term_memory
@@ -33,6 +36,7 @@ class ConversationService:
             short_term_memory=short_term_memory,
             long_term_memory=long_term_memory,
             retrieval_service=retrieval_service,
+            session_factory=session_factory,
         )
 
     async def process_message(
@@ -63,6 +67,7 @@ class ConversationService:
             current_workflow=None,
             workflow_state="idle",
             rag_context=[],
+            portfolio_context="",
             response="",
             error=None,
             next_action=None,

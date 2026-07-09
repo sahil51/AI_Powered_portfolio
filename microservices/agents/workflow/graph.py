@@ -1,4 +1,5 @@
 from langgraph.graph import END, StateGraph
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from agents.confirmation.handler import ConfirmationHandler
 from agents.intent.classifier import IntentClassifier
@@ -10,6 +11,7 @@ from memory.long_term.service import LongTermMemory
 from memory.short_term.service import ShortTermMemory
 from monitoring.logger import logger
 from prompts.system.executive_assistant import SYSTEM_PROMPT
+from rag.portfolio.service import PortfolioDataService
 from rag.retrieval.service import RetrievalService
 
 
@@ -22,6 +24,7 @@ class ExecutiveAssistantGraph:
         short_term_memory: ShortTermMemory,
         long_term_memory: LongTermMemory,
         retrieval_service: RetrievalService,
+        session_factory: async_sessionmaker | None = None,
     ):
         self.llm = llm
         self.intent_classifier = intent_classifier
@@ -29,6 +32,7 @@ class ExecutiveAssistantGraph:
         self.short_term_memory = short_term_memory
         self.long_term_memory = long_term_memory
         self.retrieval_service = retrieval_service
+        self._session_factory = session_factory
         self.graph = self._build_graph()
 
     def _build_graph(self) -> StateGraph:
@@ -36,6 +40,7 @@ class ExecutiveAssistantGraph:
 
         workflow.add_node("classify_intent", self.classify_intent)
         workflow.add_node("load_memory", self.load_memory)
+        workflow.add_node("load_portfolio_context", self.load_portfolio_context)
         workflow.add_node("retrieve_context", self.retrieve_context)
         workflow.add_node("check_tool_need", self.check_tool_need)
         workflow.add_node("collect_information", self.collect_information)
@@ -46,15 +51,11 @@ class ExecutiveAssistantGraph:
         workflow.add_node("update_memory", self.update_memory)
         workflow.add_node("handle_error", self.handle_error)
 
-        workflow.set_entry_point("classify_intent")
+        workflow.set_entry_point("load_memory")
 
-        workflow.add_conditional_edges(
-            "classify_intent",
-            self.route_after_intent,
-            {"load_memory": "load_memory", "generate_response": "generate_response"},
-        )
-
-        workflow.add_edge("load_memory", "retrieve_context")
+        workflow.add_edge("load_memory", "classify_intent")
+        workflow.add_edge("classify_intent", "load_portfolio_context")
+        workflow.add_edge("load_portfolio_context", "retrieve_context")
         workflow.add_edge("retrieve_context", "check_tool_need")
 
         workflow.add_conditional_edges(
@@ -110,6 +111,18 @@ class ExecutiveAssistantGraph:
         return workflow.compile()
 
     async def classify_intent(self, state: GraphState) -> dict:
+        existing_intent = state.get("intent")
+        workflow_intents = [
+            IntentType.SCHEDULE_INTERVIEW.value,
+            IntentType.SCHEDULE_CONSULTATION.value,
+            IntentType.BECOME_LEAD.value,
+        ]
+        if existing_intent in workflow_intents and state.get("workflow_state") in [
+            WorkflowState.COLLECTING.value, WorkflowState.CONFIRMING.value,
+        ]:
+            logger.info(f"Keeping existing workflow intent: {existing_intent}", extra={"conversation_id": state["conversation_id"]})
+            return {"intent": existing_intent}
+
         intent = await self.intent_classifier.classify(
             state["user_message"],
             state["user_type"],
@@ -122,15 +135,49 @@ class ExecutiveAssistantGraph:
         user_profile = await self.long_term_memory.get_user_by_id(state["user_id"])
         conv_state = await self.short_term_memory.get_conversation_state(state["conversation_id"])
 
+        updates = {}
+
+        if conv_state:
+            if conv_state.current_intent:
+                updates["intent"] = conv_state.current_intent
+            if conv_state.collected_data:
+                updates["collected_data"] = conv_state.collected_data
+            if conv_state.current_workflow:
+                updates["current_workflow"] = conv_state.current_workflow
+            if conv_state.workflow_state:
+                updates["workflow_state"] = conv_state.workflow_state
+            if conv_state.confirmation_pending:
+                updates["confirmation_pending"] = conv_state.confirmation_pending
+
         memory_context = {
             "session": session_data or {},
             "profile": user_profile.model_dump() if user_profile else {},
             "conversation": conv_state.model_dump() if conv_state else {},
         }
-        return {"memory_context": memory_context}
+        updates["memory_context"] = memory_context
+        return updates
+
+    async def load_portfolio_context(self, state: GraphState) -> dict:
+        if not self._session_factory:
+            return {"portfolio_context": "Portfolio Data:\nNo database session available for portfolio data."}
+
+        try:
+            async with self._session_factory() as session:
+                service = PortfolioDataService(session)
+                context = await service.fetch_all()
+                return {"portfolio_context": context or "Portfolio Data:\nNo portfolio data found."}
+        except Exception as e:
+            logger.warning(f"Failed to load portfolio context: {e}")
+            return {"portfolio_context": "Portfolio Data:\nUnable to load portfolio data at this time."}
 
     async def retrieve_context(self, state: GraphState) -> dict:
-        if state["intent"] in [IntentType.VIEW_PROJECTS.value, IntentType.LEARN_ABOUT.value, IntentType.TECHNICAL_QUESTION.value]:
+        info_intents = [
+            IntentType.VIEW_PROJECTS.value, IntentType.LEARN_ABOUT.value,
+            IntentType.TECHNICAL_QUESTION.value, IntentType.VIEW_EXPERIENCE.value,
+            IntentType.VIEW_RESUME.value, IntentType.GENERAL_QUESTION.value,
+            IntentType.QUESTION_ANSWERING.value, IntentType.UNKNOWN.value,
+        ]
+        if state["intent"] in info_intents:
             results = await self.retrieval_service.retrieve(state["user_message"])
             return {"rag_context": results}
         return {"rag_context": []}
@@ -239,10 +286,19 @@ class ExecutiveAssistantGraph:
         if state.get("response"):
             return {}
 
+        portfolio_context = state.get("portfolio_context", "")
+        system_prompt = SYSTEM_PROMPT.replace("{{PORTFOLIO_CONTEXT}}", portfolio_context)
+
         messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": state["user_message"]},
+            {"role": "system", "content": system_prompt},
         ]
+
+        conv_history = state.get("memory_context", {}).get("conversation", {}).get("messages", [])
+        for msg in conv_history:
+            if isinstance(msg, dict):
+                messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+
+        messages.append({"role": "user", "content": state["user_message"]})
 
         if state.get("rag_context"):
             context = "\n\n".join(state["rag_context"])
@@ -251,6 +307,7 @@ class ExecutiveAssistantGraph:
         try:
             response = await self.llm.generate_with_tools(messages, tools=[])
             content = response.choices[0].message.content or ""
+            content = self._strip_markdown(content)
             return {"response": content}
         except Exception as e:
             logger.error(f"Response generation failed: {e}")
@@ -259,12 +316,38 @@ class ExecutiveAssistantGraph:
     async def update_memory(self, state: GraphState) -> dict:
         if state.get("response"):
             from domain.models.conversation import Message
-            msg = Message(role="assistant", content=state["response"])
             conv_state = await self.short_term_memory.get_conversation_state(state["conversation_id"])
-            if conv_state:
-                conv_state.messages.append(msg)
-                await self.short_term_memory.save_conversation_state(conv_state)
+            if not conv_state:
+                from domain.models.conversation import ConversationState
+                conv_state = ConversationState(
+                    conversation_id=state["conversation_id"],
+                    user_id=state["user_id"],
+                )
+            user_msg = Message(role="user", content=state["user_message"])
+            assistant_msg = Message(role="assistant", content=state["response"])
+            conv_state.messages.append(user_msg)
+            conv_state.messages.append(assistant_msg)
+            conv_state.current_intent = state.get("intent")
+            conv_state.collected_data = state.get("collected_data", {})
+            conv_state.current_workflow = state.get("current_workflow")
+            conv_state.workflow_state = state.get("workflow_state", "idle")
+            conv_state.confirmation_pending = state.get("confirmation_pending", False)
+            await self.short_term_memory.save_conversation_state(conv_state)
         return {}
+
+    def _strip_markdown(self, text: str) -> str:
+        import re
+        text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+        text = re.sub(r'\*(.+?)\*', r'\1', text)
+        text = re.sub(r'__(.+?)__', r'\1', text)
+        text = re.sub(r'_(.+?)_', r'\1', text)
+        text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^-\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^>\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'```[\s\S]*?```', '', text)
+        text = re.sub(r'`([^`]+)`', r'\1', text)
+        text = re.sub(r'\|', ' ', text)
+        return text.strip()
 
     async def handle_error(self, state: GraphState) -> dict:
         error = state.get("error", "Unknown error occurred")
@@ -273,11 +356,6 @@ class ExecutiveAssistantGraph:
             "response": f"I encountered an issue: {error}. Please try again or contact support.",
             "workflow_state": WorkflowState.FAILED.value,
         }
-
-    def route_after_intent(self, state: GraphState) -> str:
-        if state["intent"] == IntentType.UNKNOWN.value:
-            return "generate_response"
-        return "load_memory"
 
     def route_tool_need(self, state: GraphState) -> str:
         if state.get("needs_tool"):

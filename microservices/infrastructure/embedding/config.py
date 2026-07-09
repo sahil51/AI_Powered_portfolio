@@ -23,9 +23,11 @@ class EmbeddingClientConfig:
         if settings.nvidia_api_key:
             api_keys["nvidia"] = settings.nvidia_api_key
 
+        default_model = settings.embedding_model or "text-embedding-004"
+
         return cls(
             api_keys=api_keys,
-            default_model="text-embedding-004",
+            default_model=default_model,
             timeout=30.0,
             max_retries=3,
             circuit_breaker_threshold=5,

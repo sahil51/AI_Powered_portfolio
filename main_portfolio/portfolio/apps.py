@@ -4,3 +4,6 @@ class PortfolioConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'portfolio'
     verbose_name = "Portfolio Management"
+
+    def ready(self):
+        import portfolio.signals  # noqa

@@ -7,7 +7,7 @@ from infrastructure.queue.routing import task_annotations, task_queues, task_rou
 
 celery_app = Celery(
     celery_config.app_name,
-    broker=celery_config.build_broker_url,
+    broker=celery_config.build_broker_url(),
     backend=celery_config.result_backend,
     include=task_modules,
 )

@@ -39,9 +39,8 @@ async def get_chat_service(request: Request) -> tuple[ConversationService, Cache
     cache_service = CacheService(redis)
     short_term_memory = ShortTermMemory(cache_service)
     embedding_service = EmbeddingService()
-    retrieval_service = RetrievalService(embedding_service)
-
     session = request.app.state.db_session
+    retrieval_service = RetrievalService(embedding_service, session_factory=session)
 
     async def get_long_term_memory():
         async with session() as db_session:
@@ -52,6 +51,7 @@ async def get_chat_service(request: Request) -> tuple[ConversationService, Cache
         short_term_memory=short_term_memory,
         long_term_memory=await get_long_term_memory(),
         retrieval_service=retrieval_service,
+        session_factory=session,
     )
     return service, cache_service
 

@@ -1,42 +1,26 @@
-import hashlib
-import random
-from openai import AsyncOpenAI
+import uuid
 
-from config.settings import settings
+from application.embedding.models import EmbeddingProviderType, EmbeddingRequest
+from infrastructure.embedding.config import EmbeddingClientConfig
+from infrastructure.embedding.factory import ProviderFactory
 from monitoring.logger import logger
 
 
 class EmbeddingService:
     def __init__(self):
-        self.openai_configured = bool(settings.openai_api_key)
-        if self.openai_configured:
-            self.client = AsyncOpenAI(api_key=settings.openai_api_key)
-        else:
-            logger.warning("OPENAI_API_KEY not configured. EmbeddingService will use deterministic mock embedding fallback.")
-        self.model = settings.embedding_model
-
-    def _generate_mock_embedding(self, text: str, dimension: int = 1536) -> list[float]:
-        # Generate deterministic mock embedding based on input text hash
-        hasher = hashlib.sha256(text.encode("utf-8"))
-        seed = int(hasher.hexdigest(), 16) % (2**32)
-        rng = random.Random(seed)
-        return [rng.uniform(-1.0, 1.0) for _ in range(dimension)]
+        client_config = EmbeddingClientConfig.from_settings()
+        provider = ProviderFactory.create(EmbeddingProviderType.GEMINI, client_config=client_config)
+        self._provider = provider
+        self._model = client_config.default_model or "text-embedding-004"
+        logger.info(f"EmbeddingService initialized with Gemini provider, model={self._model}")
 
     async def embed_text(self, text: str) -> list[float]:
-        if not self.openai_configured:
-            return self._generate_mock_embedding(text)
-        response = await self.client.embeddings.create(
-            model=self.model,
-            input=text,
-        )
-        return response.data[0].embedding
+        request = EmbeddingRequest(chunk_id=str(uuid.uuid4()), text=text, model=self._model)
+        response = await self._provider.generate(request)
+        return response.embedding
 
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        if not self.openai_configured:
-            return [self._generate_mock_embedding(t) for t in texts]
-        response = await self.client.embeddings.create(
-            model=self.model,
-            input=texts,
-        )
-        return [item.embedding for item in response.data]
+        requests = [EmbeddingRequest(chunk_id=str(uuid.uuid4()), text=t, model=self._model) for t in texts]
+        responses = await self._provider.generate_batch(requests)
+        return [r.embedding for r in responses]
 

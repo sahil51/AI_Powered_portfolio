@@ -32,6 +32,7 @@ class Settings(BaseSettings):
 
     llm_primary_model: str = Field("", alias="LLM_PRIMARY_MODEL")
     gemini_api_key: str = Field("", alias="GEMINI_API_KEY")
+    gemini_model: str = Field("gemini-2.5-flash", alias="GEMINI_MODEL")
     cerebras_api_key: str = Field("", alias="CEREBRAS_API_KEY")
     cerebras_model: str = Field("gpt-oss-120b", alias="CEREBRAS_MODEL")
     nvidia_api_key: str = Field("", alias="NVIDIA_API_KEY")

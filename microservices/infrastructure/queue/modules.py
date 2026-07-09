@@ -7,4 +7,5 @@ task_modules = [
     "tasks.maintenance_tasks",
     "tasks.critical_tasks",
     "tasks.knowledge_tasks",
+    "tasks.portfolio_sync",
 ]

@@ -140,6 +140,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # AI Assistant Microservice API URL loaded from environment
 CHAT_API_URL = os.getenv('CHAT_API_URL', '/api/chat/')
 
+# Reindex webhook URL for portfolio sync with AI microservice
+REINDEX_WEBHOOK_URL = os.getenv('REINDEX_WEBHOOK_URL', 'http://127.0.0.1:8000/admin/reindex-portfolio')
+
 
 JAZZMIN_UI_TWEAKS = {
     "theme": "pulse",

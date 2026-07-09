@@ -24,6 +24,8 @@ class LiteLLMConfiguration:
         fallbacks: list[str] = []
         if settings.cerebras_api_key:
             fallbacks.append(f"cerebras/{settings.cerebras_model}")
+        if settings.gemini_api_key:
+            fallbacks.append(f"gemini/{settings.gemini_model}")
         if settings.nvidia_api_key:
             fallbacks.append(f"nvidia/{settings.nvidia_model}")
         if settings.hf_token:

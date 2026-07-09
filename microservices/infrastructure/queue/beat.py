@@ -21,4 +21,9 @@ beat_schedule = {
         "schedule": crontab(minute="*/1"),
         "options": {"queue": "maintenance"},
     },
+    "reindex-portfolio-every-15min": {
+        "task": "tasks.portfolio_sync.reindex_portfolio_if_changed",
+        "schedule": crontab(minute="*/15"),
+        "options": {"queue": "maintenance"},
+    },
 }

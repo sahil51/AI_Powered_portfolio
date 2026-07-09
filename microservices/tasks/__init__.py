@@ -1,5 +1,6 @@
 from tasks.critical_tasks import critical_operation_task, failover_task
 from tasks.embedding_tasks import generate_embeddings_task, index_document_task
+from tasks.portfolio_sync import force_reindex_portfolio, reindex_portfolio_if_changed
 from tasks.maintenance_tasks import (
     cleanup_expired_idempotency_keys,
     cleanup_expired_sessions,
@@ -27,6 +28,7 @@ from tasks.workflow_tasks import (
 )
 
 __all__ = [
+    "reindex_portfolio_if_changed", "force_reindex_portfolio",
     "schedule_meeting_task", "check_availability_task", "cancel_meeting_task",
     "create_lead_task", "send_notification_task", "send_followup_task",
     "update_conversation_summary_task", "cleanup_expired_sessions_task",

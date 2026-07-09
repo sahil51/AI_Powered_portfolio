@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from markdown_it import MarkdownIt
+from markdown_it import MarkdownIt  # pip install markdown-it-py
 
 from application.knowledge_ingestion.models import ImportSource
 from application.knowledge_ingestion.parsers.base import BaseDocumentParser, ParseResult
