@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}{{ hero.name }} — {{ hero.role }}{% endblock %}</title>
+<meta name="description" content="{% block description %}{{ hero.short_intro }}{% endblock %}"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}"/>
+<link rel="stylesheet" href="{% static 'portfolio/css/typing.css' %}"/>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <a href="{% url 'portfolio:home' %}" style="text-decoration: none; color: inherit;">
+      ST
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="{% url 'portfolio:home' %}">Home</a></li>
+    <li><a href="{% url 'portfolio:home' %}#summary">About</a></li>
+    <li><a href="{% url 'portfolio:home' %}#skills">Skills</a></li>
+    <li><a href="{% url 'portfolio:home' %}#experience">Experience</a></li>
+    <li><a href="{% url 'portfolio:home' %}#projects">Projects</a></li>
+    <li><a href="{% url 'portfolio:blog_list' %}">Blog</a></li>
+    <li><a href="{% url 'portfolio:home' %}#education">Education</a></li>
+    <li><a href="{% url 'portfolio:visitors' %}">Visitors</a></li>
+    <li><a href="{% url 'portfolio:home' %}#contact">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="https://wa.me/{{ hero.phone|cut:' '|cut:'+' }}" class="nav-cta whatsapp-cta" target="_blank" rel="noopener noreferrer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 16px; height: 16px; fill: currentColor;"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+      WhatsApp
+    </a>
+    <a href="#" class="nav-cta ai-cta open-chat"><i class="fa-solid fa-robot" style="font-size: 16px;"></i> Ask AI</a>
+    <a href="mailto:{{ hero.email }}" class="nav-cta">Hire Me</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="{% url 'portfolio:home' %}" class="mm-link">Home</a>
+  <a href="{% url 'portfolio:home' %}#summary" class="mm-link">About</a>
+  <a href="{% url 'portfolio:home' %}#skills" class="mm-link">Skills</a>
+  <a href="{% url 'portfolio:home' %}#experience" class="mm-link">Experience</a>
+  <a href="{% url 'portfolio:home' %}#projects" class="mm-link">Projects</a>
+  <a href="{% url 'portfolio:blog_list' %}" class="mm-link">Blog</a>
+  <a href="{% url 'portfolio:home' %}#education" class="mm-link">Education</a>
+  <a href="{% url 'portfolio:visitors' %}" class="mm-link">Visitors</a>
+  <a href="{% url 'portfolio:home' %}#contact" class="mm-link">Contact</a>
+  <a href="https://wa.me/917404304607" class="mm-link" target="_blank" rel="noopener noreferrer" style="color:#25D366; display: flex; align-items: center; gap: 8px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 18px; height: 18px; fill: currentColor;"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+    WhatsApp
+  </a>
+  <a href="#" class="mm-link open-chat" style="color:var(--cyan); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-robot" style="font-size: 18px;"></i> Ask AI</a>
+</div>
+
+<!-- MAIN CONTENT -->
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer>
+  <span style="color:var(--cyan)">{{ hero.name }}</span> &nbsp;·&nbsp; {{ hero.role }} &nbsp;·&nbsp; {{ hero.location }} &nbsp;·&nbsp; {{ hero.email }}
+</footer>
+
+<!-- THOUGHT BUBBLE -->
+<div class="chat-thought-bubble" id="chatThoughtBubble">
+  <span class="chat-thought-text" id="chatThoughtText"></span>
+</div>
+
+<!-- FLOATING CHAT BUTTON & WINDOW -->
+<button class="floating-chat-btn" id="chatBtn" aria-label="Open Chat">
+    <img src="{% static 'portfolio/img/husky-avatar.png' %}" alt="AI" class="floating-chat-avatar">
+</button>
+
+<!-- MINI CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-header-title">
+      <div class="chat-mini-avatar">
+        <img src="{% static 'portfolio/img/husky-avatar.png' %}" alt="AI Avatar">
+      </div>
+      <div class="chat-mini-info">
+        <div class="chat-mini-name">Daisy</div>
+        <div class="chat-mini-status"><span></span> Online</div>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button class="chat-maximize" id="chatMaximize" title="Full Screen"><i class="fa-solid fa-expand"></i></button>
+      <button class="chat-close" id="chatClose">✕</button>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-msg bot">
+      <i class="fa-solid fa-hand-wave" style="color:var(--cyan);margin-right:6px;"></i>
+      Hi! I'm <strong style="color:var(--cyan)">Daisy</strong>, {{ hero.name }}'s AI assistant.<br><br>
+      I can answer anything about {{ hero.name }} — his experience, skills, projects, or how to get in touch.
+    </div>
+    <div class="chat-suggestions" id="chatSuggestions" style="display: none; margin-top: 16px;"></div>
+  </div>
+  <div class="chat-input-area">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything about Sahil..." autocomplete="off">
+    <button class="chat-send" id="chatSend"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- FULL-SCREEN CHAT OVERLAY -->
+<div class="chat-fullscreen" id="chatFullscreen">
+  <div class="chat-fullscreen-inner">
+    <!-- 3D Holographic Banner -->
+    <div class="chat-fs-banner">
+      <button class="chat-fs-close" id="chatFsClose" title="Exit Full Screen">
+        <i class="fa-solid fa-compress"></i>
+      </button>
+      <div class="holo-container">
+        <!-- 3D Avatar -->
+        <div class="avatar-3d-wrapper" id="avatarRing">
+          <div class="avatar-core-3d">
+            <img src="{% static 'portfolio/img/husky-avatar.png' %}" alt="Husky avatar" class="avatar-husky" id="avatarIcon">
+          </div>
+        </div>
+        <div class="avatar-info">
+          <div class="avatar-label">Daisy</div>
+          <div class="avatar-status" id="avatarStatus">Online</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages area -->
+    <div class="chat-fs-body">
+      <!-- Messages Column -->
+      <div class="chat-fs-messages-col">
+        <div class="chat-fs-messages" id="chatFsBody">
+          <div class="chat-msg bot">
+            <i class="fa-solid fa-hand-wave" style="color:var(--cyan);margin-right:6px;"></i>
+            Hi! I'm <strong>Daisy</strong>, Sahil Thakur's AI assistant.<br><br>
+            I can answer anything about Sahil — his experience, skills, projects, or how to get in touch.
+          </div>
+        </div>
+        <div class="chat-suggestions" id="chatFsSuggestions" style="display: none; margin: 0 20px 10px; justify-content: center;"></div>
+        <div class="chat-fs-input-area">
+          <input type="text" class="chat-input" id="chatFsInput" placeholder="Ask me anything about Sahil..." autocomplete="off">
+          <button class="chat-send" id="chatFsSend"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.CHAT_API_URL = "{{ chat_api_url }}";
+</script>
+<script src="{% static 'portfolio/js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

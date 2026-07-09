@@ -1,6 +1,0 @@
-Django>=4.2
-python-decouple
-psycopg2-binary
-langchain
-langchain-google-genai
-twilio

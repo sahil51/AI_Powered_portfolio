@@ -1,0 +1,13 @@
+version: "1.0"
+registry_version: "1.0.0"
+prompts:
+  - name: analysis.sentiment
+    category: analysis
+    version: 1.0.0
+    status: active
+    description: Sentiment analysis prompt
+    tags: [analysis, sentiment]
+    owner: platform
+    variables:
+      - name: message
+        required: true

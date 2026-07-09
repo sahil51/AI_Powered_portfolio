@@ -1,0 +1,374 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  /* Custom Contact Grid Responsive Layout */
+  .contact-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+    width: 100% !important;
+    margin-top: 24px !important;
+  }
+
+  .contact-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 14px 18px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+    border-radius: 12px !important;
+    text-decoration: none !important;
+    color: var(--white, #ffffff) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-sizing: border-box !important;
+  }
+
+  .contact-item:hover {
+    transform: translateY(-2px) !important;
+    border-color: var(--cyan) !important;
+    background: rgba(0, 242, 254, 0.05) !important;
+    box-shadow: 0 10px 20px rgba(0, 242, 254, 0.1) !important;
+  }
+
+  /* Half-width (50%) */
+  .contact-item.half-width {
+    flex: 1 1 calc(50% - 10px) !important;
+    min-width: 200px !important;
+  }
+
+  /* Full-width (100%) */
+  .contact-item.full-width {
+    flex: 1 1 100% !important;
+  }
+
+  /* Icon custom spacing */
+  .contact-item-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    margin-right: 12px !important;
+    color: var(--cyan) !important;
+    background: rgba(0, 242, 254, 0.1) !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .contact-item.half-width {
+      flex: 1 1 100% !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+    
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-lines"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow"><span class="pulse"></span>Open to Opportunities</div>
+      <h1>{{ hero.name }}</h1>
+      <div class="name-sub">{{ hero.location }}</div>
+      <div class="role-line"><span id="typed-role"></span><span class="cursor-blink"></span></div>
+      <p class="hero-desc">{{ hero.short_intro }}</p>
+      <div class="btn-row">
+        <a href="mailto:{{ hero.email }}" class="btn btn-primary">✉ Get in Touch</a>
+        <a href="#projects" class="btn btn-ghost">View Projects</a>
+        {% if hero.resume %}
+        <a href="{{ hero.resume.url }}" class="btn btn-ghost" target="_blank" download>📄 Download CV</a>
+        {% endif %}
+      </div>
+      <div class="hero-socials">
+        <a href="{{ hero.linkedin_url }}" class="social-link" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="{{ hero.github_url }}" class="social-link" target="_blank" rel="noopener">GitHub</a>
+        <a href="{{ hero.portfolio_url }}" class="social-link" target="_blank" rel="noopener">Portfolio</a>
+      </div>
+    </div>
+    <div>
+      <div class="terminal">
+        <div class="term-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="term-title">{{ hero.terminal_title }}</span>
+        </div>
+        <div class="term-body">
+          <div class="tl"><span class="t-k">class</span> <span class="t-n">{{ hero.class_name }}</span>:</div>
+          <div class="tl">&nbsp;&nbsp;<span class="t-k">def</span> <span class="t-n">__init__</span>(self):</div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">role</span> = <span class="t-s">"{{ hero.role }}"</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">location</span> = <span class="t-s">"{{ hero.location }}"</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">company</span> = <span class="t-s">"{{ hero.current_company }}"</span></div>
+          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">stack</span> = [</div>
+          {% for tech in hero.get_tech_stack_list %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-s">"{{ tech }}"</span>{% if not forloop.last %},{% endif %}</div>
+          {% endfor %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;]</div>
+          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">ai_expertise</span> = [</div>
+          {% for exp in hero.get_ai_expertise_list %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-s">"{{ exp }}"</span>{% if not forloop.last %},{% endif %}</div>
+          {% endfor %}
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;]</div>
+          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">open_to_work</span> = <span class="t-n">{% if hero.open_to_work %}True{% else %}False{% endif %}</span> <span class="t-c"># ✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat reveal">
+      <div class="stat-num" data-target="{{ hero.experience_years }}" data-show-plus="true">0</div>
+      <div class="stat-label">Years Experience</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-target="{{ hero.ai_agents_built }}" data-show-plus="false">0</div>
+      <div class="stat-label">AI Agents Built</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-target="{{ hero.projects_completed }}" data-show-plus="true">0</div>
+      <div class="stat-label">Projects Completed</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<section id="summary">
+  <div class="section-inner">
+    <div class="section-label reveal">About Me</div>
+    <h2 class="section-title reveal">Summary</h2>
+    <div class="summary-card reveal">
+      <p class="summary-text">{{ hero.about_me }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-inner">
+    <div class="section-label reveal">Capabilities</div>
+    <h2 class="section-title reveal">Technical <span>Skills</span></h2>
+    <div class="skills-grid">
+      {% for category in skill_categories %}
+      <div class="skill-card reveal">
+        <div class="skill-card-header">
+          <div class="skill-card-icon">
+              <i class="{{ category.icon_class }}"></i>
+          </div>
+          <div class="skill-card-title">{{ category.name }}</div>
+        </div>
+        <div class="skill-tags">
+          {% for skill in category.skills.all %}
+          <span class="tag">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-inner">
+    <div class="section-label reveal">Work History</div>
+    <h2 class="section-title reveal">Experience</h2>
+    
+    {% for exp in experiences %}
+    <div class="exp-item reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-company">{{ exp.company }}</div>
+          <div class="exp-location">📍 {{ exp.location }}</div>
+          <div class="exp-role">⚡ {{ exp.role }}</div>
+        </div>
+        <div class="exp-date">
+          {% if exp.is_present %}
+          <div class="badge">● Present</div>
+          {% endif %}
+          <div>{{ exp.start_date }} — {{ exp.end_date }}</div>
+        </div>
+      </div>
+
+      <p class="exp-intro">{{ exp.intro }}</p>
+
+      {% if exp.company_projects %}
+      <div class="exp-subheading">Company Projects</div>
+      <ul class="exp-achievements">
+        {% for proj in exp.get_company_projects_list %}
+        <li>
+          <div>{{ proj|safe }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if exp.key_contributions %}
+      <div class="exp-subheading">Key Contributions</div>
+      <ul class="exp-achievements">
+        {% for contribution in exp.get_key_contributions_list %}
+        <li>{{ contribution|safe }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <div class="exp-tech-row">
+        {% for tech in exp.get_technologies_list %}
+        <span class="tag">{{ tech }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-inner">
+    <div class="section-label reveal">Work</div>
+    <h2 class="section-title reveal">Featured <span>Projects</span></h2>
+    <div class="projects-grid">
+      {% for proj in projects %}
+      <div class="proj-card reveal">
+        <div class="proj-content">
+          <div class="proj-number">PROJECT — {{ proj.number|stringformat:"02d" }}</div>
+          <div class="proj-icon">
+              <i class="{{ proj.icon_class }}"></i>
+          </div>
+          <div class="proj-name">{{ proj.title }}</div>
+          <div class="proj-desc">{{ proj.description }}</div>
+          <div class="proj-stack">
+            {% for tech in proj.get_technologies_list %}
+            <span class="proj-tag">{{ tech }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-inner">
+    <div class="section-label reveal">Background</div>
+    <h2 class="section-title reveal">Education</h2>
+    <div class="edu-grid">
+      {% for edu in educations %}
+      <div class="edu-card reveal">
+        <div>
+          <div class="edu-badge">
+              <i class="fa-solid fa-graduation-cap"></i> 
+              Degree
+          </div>
+          <div class="edu-inst">{{ edu.institution }}</div>
+          <div class="edu-degree">{{ edu.degree }}</div>
+          
+          <div class="edu-scores">
+            {% for score in edu.get_scores_list %}
+            <span class="edu-score">{{ score }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="edu-date-col">
+          <div class="edu-date">{{ edu.duration }}</div>
+          <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">{{ edu.location }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- MARKETING FUNNEL CTA -->
+<section id="cta-funnel" style="background: var(--bg); padding: 80px 5vw;">
+  <div class="funnel-card reveal" style="max-width: 1000px; margin: 0 auto; background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%); border-radius: 24px; padding: 60px 40px; text-align: center; color: #FFFFFF; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25); position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(30px); pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -50px; right: -50px; width: 250px; height: 250px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(40px); pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1;">
+      <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700; margin-bottom: 20px; letter-spacing: -1px; color: #FFFFFF;">Ready to build something amazing?</h2>
+      <p style="font-size: 18px; line-height: 1.6; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; color: rgba(255,255,255,0.9);">Let's turn your ideas into scalable, robust software.</p>
+      <a href="#contact" class="funnel-btn" style="background: #FFFFFF; color: var(--purple); font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 36px; border-radius: 12px; display: inline-block; text-decoration: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: all 0.3s;">Start a Project</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="section-label reveal" style="text-align:center;justify-content:center">Let's Connect</div>
+    <h2 class="reveal" style="margin-bottom: 0;">Let's Build Something Great.</h2>
+  </div>
+  
+  <div class="contact-split-container reveal">
+    <div class="contact-split-layout">
+      <!-- Left Column: Details -->
+      <div class="contact-left">
+        <div class="contact-info-container">
+          <h3>Reach Out Directly</h3>
+          <p class="contact-left-desc">{{ hero.contact_description }}</p>
+          <div class="contact-grid">
+            {% for method in contact_methods %}
+            <a href="{{ method.link }}" class="contact-item {% if method.is_full_width %}full-width{% else %}half-width{% endif %}" target="_blank" rel="noopener">
+              <span class="contact-item-icon"><i class="{{ method.icon_class }}"></i></span>
+              <span>{{ method.value }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Form -->
+      <div class="contact-right">
+        <div class="contact-form-container">
+          <h3>Send an Email</h3>
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}" style="padding: 12px; margin-bottom: 20px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; background: {% if message.tags == 'success' %}rgba(16, 185, 129, 0.15){% else %}rgba(239, 68, 68, 0.15){% endif %}; color: {% if message.tags == 'success' %}#10b981{% else %}#ef4444{% endif %}; border: 1px solid {% if message.tags == 'success' %}#10b981{% else %}#ef4444{% endif %};">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <form id="contact-form" action="{% url 'portfolio:contact_submit' %}" method="POST" class="contact-form">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="id_name">Your Name</label>
+              <input type="text" id="id_name" name="name" class="form-control" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label for="id_email">Your Email</label>
+              <input type="email" id="id_email" name="email" class="form-control" placeholder="john@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="id_message">Message</label>
+              <textarea id="id_message" name="message" class="form-control" rows="5" placeholder="How can I help you?" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary submit-btn">Send Message <i class="fa-solid fa-paper-plane" style="margin-left: 8px;"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Inject typed roles from DB as JSON -->
+<script>
+  window.TYPED_ROLES = {{ roles|safe }};
+</script>
+{% endblock %}

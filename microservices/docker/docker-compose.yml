@@ -1,0 +1,177 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DB_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    env_file:
+      - ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ..:/app
+    restart: unless-stopped
+
+  celery_worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.celery
+    environment:
+      - DB_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    env_file:
+      - ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  celery_beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.celery
+    command: celery -A infrastructure.queue.celery_app beat -l info
+    environment:
+      - DB_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ai_assistant
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  redis-replica-1:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    command: redis-server --replicaof redis 6379
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis-replica-2:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379"
+    command: redis-server --replicaof redis 6379
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis-sentinel-1:
+    image: redis:7-alpine
+    ports:
+      - "26379:26379"
+    command: >
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel-1.conf:/etc/redis/sentinel.conf
+    depends_on:
+      - redis
+      - redis-replica-1
+      - redis-replica-2
+    restart: unless-stopped
+
+  redis-sentinel-2:
+    image: redis:7-alpine
+    ports:
+      - "26380:26379"
+    command: >
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel-2.conf:/etc/redis/sentinel.conf
+    depends_on:
+      - redis
+      - redis-replica-1
+      - redis-replica-2
+    restart: unless-stopped
+
+  redis-sentinel-3:
+    image: redis:7-alpine
+    ports:
+      - "26381:26379"
+    command: >
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel-3.conf:/etc/redis/sentinel.conf
+    depends_on:
+      - redis
+      - redis-replica-1
+      - redis-replica-2
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  n8n_data:

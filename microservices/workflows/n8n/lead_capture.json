@@ -1,0 +1,63 @@
+{
+  "name": "Lead Capture Workflow",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "path": "lead/capture",
+        "responseMode": "responseNode"
+      },
+      "position": [250, 300]
+    },
+    {
+      "name": "Create Lead in CRM",
+      "type": "n8n-nodes-base.hubspot",
+      "parameters": {
+        "resource": "contact",
+        "operation": "upsert",
+        "properties": {
+          "email": "={{$json.email}}",
+          "firstname": "={{$json.name.split(' ')[0]}}",
+          "lastname": "={{$json.name.split(' ').slice(1).join(' ')}}",
+          "company": "={{$json.company}}"
+        }
+      },
+      "position": [500, 300]
+    },
+    {
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.emailSend",
+      "parameters": {
+        "toEmail": "={{$json.email}}",
+        "subject": "Thank you for your interest!",
+        "text": "Hi {{$json.name}},\n\nThank you for reaching out. Sahil will review your inquiry and get back to you within 24 hours.\n\nBest regards,\nSahil's AI Executive Assistant"
+      },
+      "position": [750, 300]
+    },
+    {
+      "name": "Notify Sahil",
+      "type": "n8n-nodes-base.slack",
+      "parameters": {
+        "channel": "C01ABCDEFG",
+        "text": "New lead captured!\nName: {{$json.name}}\nCompany: {{$json.company}}\nEmail: {{$json.email}}"
+      },
+      "position": [1000, 300]
+    },
+    {
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"lead_created\",\n  \"lead_id\": $json.id\n}"
+      },
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {"main": [[{"node": "Create Lead in CRM", "type": "main", "index": 0}]]},
+    "Create Lead in CRM": {"main": [[{"node": "Send Welcome Email", "type": "main", "index": 0}]]},
+    "Send Welcome Email": {"main": [[{"node": "Notify Sahil", "type": "main", "index": 0}]]},
+    "Notify Sahil": {"main": [[{"node": "Response", "type": "main", "index": 0}]]}
+  }
+}

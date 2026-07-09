@@ -1,0 +1,107 @@
+{
+  "name": "Meeting Schedule Workflow",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "path": "meeting/schedule",
+        "responseMode": "responseNode"
+      },
+      "position": [250, 300]
+    },
+    {
+      "name": "Create Google Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "parameters": {
+        "operation": "create",
+        "calendarId": "primary",
+        "summary": "={{$json.meeting_purpose}}",
+        "start": {
+          "dateTime": "={{$json.preferred_date + 'T' + $json.preferred_time}}",
+          "timeZone": "={{$json.timezone}}"
+        },
+        "end": {
+          "dateTime": "={{$json.preferred_date + 'T' + $json.preferred_time + ':00'}}",
+          "timeZone": "={{$json.timezone}}"
+        },
+        "attendees": [
+          {"email": "={{$json.email}}"},
+          {"email": "sahil@example.com"}
+        ],
+        "conferenceData": {
+          "createRequest": {
+            "requestId": "={{Date.now()}}"
+          }
+        }
+      },
+      "position": [500, 300]
+    },
+    {
+      "name": "Send Email Confirmation",
+      "type": "n8n-nodes-base.emailSend",
+      "parameters": {
+        "fromEmail": "sahil@example.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Meeting Confirmed with Sahil",
+        "text": "Your meeting has been scheduled.\n\nDetails:\nDate: {{$json.preferred_date}}\nTime: {{$json.preferred_time}}\nType: {{$json.meeting_type}}\n\nBest regards,\nSahil's AI Assistant"
+      },
+      "position": [750, 300]
+    },
+    {
+      "name": "Save to CRM",
+      "type": "n8n-nodes-base.hubspot",
+      "parameters": {
+        "resource": "contact",
+        "operation": "create",
+        "properties": {
+          "email": "={{$json.email}}",
+          "firstname": "={{$json.full_name.split(' ')[0]}}",
+          "lastname": "={{$json.full_name.split(' ').slice(1).join(' ')}}",
+          "company": "={{$json.company_name}}",
+          "phone": "={{$json.contact_number}}"
+        }
+      },
+      "position": [1000, 300]
+    },
+    {
+      "name": "Notify Sahil via Slack",
+      "type": "n8n-nodes-base.slack",
+      "parameters": {
+        "channel": "C01ABCDEFG",
+        "text": "New meeting scheduled!\nFrom: {{$json.full_name}} ({{$json.company_name}})\nType: {{$json.meeting_type}}\nDate: {{$json.preferred_date}} at {{$json.preferred_time}}"
+      },
+      "position": [1250, 300]
+    },
+    {
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"scheduled\",\n  \"meet_link\": $json.meet_link,\n  \"event_id\": $json.id\n}"
+      },
+      "position": [1500, 300]
+    },
+    {
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [250, 500]
+    },
+    {
+      "name": "Compensation - Delete Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "parameters": {
+        "operation": "delete",
+        "eventId": "={{$json.event_id}}"
+      },
+      "position": [500, 500]
+    }
+  ],
+  "connections": {
+    "Webhook": {"main": [[{"node": "Create Google Calendar Event", "type": "main", "index": 0}]]},
+    "Create Google Calendar Event": {"main": [[{"node": "Send Email Confirmation", "type": "main", "index": 0}]]},
+    "Send Email Confirmation": {"main": [[{"node": "Save to CRM", "type": "main", "index": 0}]]},
+    "Save to CRM": {"main": [[{"node": "Notify Sahil via Slack", "type": "main", "index": 0}]]},
+    "Notify Sahil via Slack": {"main": [[{"node": "Response", "type": "main", "index": 0}]]}
+  }
+}

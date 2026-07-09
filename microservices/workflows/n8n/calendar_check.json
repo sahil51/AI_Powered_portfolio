@@ -1,0 +1,47 @@
+{
+  "name": "Calendar Availability Check",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "path": "calendar/check",
+        "responseMode": "responseNode"
+      },
+      "position": [250, 300]
+    },
+    {
+      "name": "Check Google Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "parameters": {
+        "operation": "getFreeBusy",
+        "calendarId": "primary",
+        "timeMin": "={{$json.date + 'T00:00:00'}}",
+        "timeMax": "={{$json.date + 'T23:59:59'}}"
+      },
+      "position": [500, 300]
+    },
+    {
+      "name": "Filter Available Slots",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "const busyTimes = $input.all()[0].json.busy || [];\nconst availableSlots = [];\nconst slots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];\n\nfor (const slot of slots) {\n  const isBusy = busyTimes.some(busy => {\n    const start = new Date(busy.start);\n    return start.getHours() >= parseInt(slot.split(':')[0]);\n  });\n  if (!isBusy) {\n    availableSlots.push(slot);\n  }\n}\n\nreturn [{ json: { available: availableSlots } }]"
+      },
+      "position": [750, 300]
+    },
+    {
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"date\": $json.date,\n  \"available_slots\": $json.available\n}"
+      },
+      "position": [1000, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {"main": [[{"node": "Check Google Calendar", "type": "main", "index": 0}]]},
+    "Check Google Calendar": {"main": [[{"node": "Filter Available Slots", "type": "main", "index": 0}]]},
+    "Filter Available Slots": {"main": [[{"node": "Response", "type": "main", "index": 0}]]}
+  }
+}

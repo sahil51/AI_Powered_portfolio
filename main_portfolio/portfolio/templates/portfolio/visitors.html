@@ -1,0 +1,63 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block title %}Visitors — Sahil Thakur{% endblock %}
+
+{% block content %}
+<main>
+    
+<section style="padding: 120px 5vw 80px;">
+  <div class="section-inner visitors-page">
+    <div class="section-label reveal visible">Meeting Desk</div>
+    <h1 class="section-title reveal visible" style="margin-bottom: 16px;">Visitors</h1>
+    <p class="reveal visible" style="max-width: 760px; color: var(--muted); line-height: 1.7; margin-bottom: 32px;">
+      This page shows client and recruiter meeting requests collected by the AI assistant.
+      You'll see the visitor's name, company, purpose, and preferred timing in one place.
+    </p>
+
+    <div class="visitor-panel reveal visible">
+      <div class="visitor-table-wrap">
+        <table class="visitor-table">
+          <thead>
+            <tr>
+              <th>Visitor Name</th>
+              <th>Company</th>
+              <th>Purpose</th>
+              <th>Connection Info</th>
+              <th>Timing</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for visitor in visitors %}
+            <tr>
+              <td>
+                <div class="visitor-name">{{ visitor.name }}</div>
+              </td>
+              <td>
+                <div>{{ visitor.company|default:"-" }}</div>
+              </td>
+              <td>{{ visitor.purpose }}</td>
+              <td>
+                <div style="text-transform: capitalize;">{{ visitor.connection_info_type }}</div>
+                <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">{{ visitor.connection_info_detail }}</div>
+              </td>
+              <td>
+                <div class="visitor-time">{{ visitor.timing }}</div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--muted); padding: 40px 0;">
+                No visitor meeting requests yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+{% endblock %}

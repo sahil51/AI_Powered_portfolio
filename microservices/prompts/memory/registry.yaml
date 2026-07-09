@@ -1,0 +1,10 @@
+version: "1.0"
+registry_version: "1.0.0"
+prompts:
+  - name: memory.profile
+    category: memory
+    version: 1.0.0
+    status: active
+    description: Profile memory extraction prompt
+    tags: [memory, profile]
+    owner: platform

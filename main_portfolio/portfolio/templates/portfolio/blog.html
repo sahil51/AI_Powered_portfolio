@@ -1,0 +1,44 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+
+{% block title %}Blog | Sahil Thakur{% blocktitle %}{% endblock %}
+
+{% block content %}
+<main>
+    
+<section id="blog-list" style="padding: 120px 5vw 80px; min-height: 80vh;">
+  <div class="section-inner">
+    <div class="section-label reveal visible">Insights & Thoughts</div>
+    <h1 class="section-title reveal visible" style="margin-bottom:40px;">All <span>Articles</span></h1>
+    
+    <div class="skills-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; margin-top: 40px;">
+    {% if blogs %}
+        {% for blog in blogs %}
+        <div class="skill-card reveal visible" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 250px;">
+          <div>
+            <div class="skill-card-header" style="margin-bottom: 12px;">
+              <div class="skill-card-icon">
+                  <i class="fa-solid fa-file-invoice"></i>
+              </div>
+              <div class="skill-card-title">{{ blog.title }}</div>
+            </div>
+            <p style="color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 16px;">{{ blog.summary }}</p>
+          </div>
+          <div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); margin-bottom: 12px;">{{ blog.created_at|date:"F d, Y" }}</div>
+            <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" class="funnel-btn" style="padding: 10px 20px; font-size: 13px; text-decoration: none; border-radius: 8px; width: 100%; text-align: center; display: block; box-sizing: border-box; background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%); color: white; border: none; font-weight: 600;">Read Article</a>
+          </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align:center; padding: 60px 0; color: var(--muted); width: 100%; grid-column: 1 / -1;">
+            <i class="fa-solid fa-pen-nib" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+            <p>No blogs published yet. Check back soon!</p>
+        </div>
+    {% endif %}
+    </div>
+  </div>
+</section>
+
+</main>
+{% endblock %}

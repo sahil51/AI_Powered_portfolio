@@ -1,0 +1,17 @@
+version: "1.0"
+registry_version: "1.0.0"
+prompts:
+  - name: classification.intent
+    category: classification
+    version: 1.0.0
+    status: active
+    description: Intent classification prompt
+    tags: [classification, intent]
+    owner: platform
+    variables:
+      - name: user_type
+        required: true
+      - name: message
+        required: true
+      - name: context
+        required: true
