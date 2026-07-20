@@ -17,12 +17,12 @@ from portfolio.models import (
 
 PORTFOLIO_MODELS = [HeroInfo, Project, Experience, Skill, SkillCategory, Education, BlogPost, ContactMethod]
 
-MICROSECRIVE_URL = getattr(settings, "REINDEX_WEBHOOK_URL", "http://127.0.0.1:8000/admin/reindex-portfolio")
+MICROSERVICE_URL = getattr(settings, "REINDEX_WEBHOOK_URL", "http://127.0.0.1:8001/api/reindex")
 
 
 def _trigger_reindex(sender, instance, **kwargs):
     try:
-        requests.post(MICROSECRIVE_URL, timeout=5)
+        requests.post(MICROSERVICE_URL, timeout=5)
     except requests.RequestException:
         pass
 

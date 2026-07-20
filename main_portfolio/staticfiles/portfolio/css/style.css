@@ -2520,3 +2520,322 @@ footer {
     opacity: 1;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MEETING UI COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Progress Bar ────────────────────────────────────────────────────────── */
+
+.meeting-progress-bar {
+  margin: 12px 0 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 242, 254, 0.15);
+  border-radius: 12px;
+  animation: meetingFadeIn 0.4s ease-out;
+}
+
+.meeting-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.meeting-progress-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.meeting-progress-step {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.meeting-progress-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.meeting-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple, #6366f1));
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.meeting-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Confirmation Card ───────────────────────────────────────────────────── */
+
+.meeting-confirmation-card {
+  margin: 12px 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  animation: meetingFadeIn 0.5s ease-out;
+  box-shadow: 0 8px 32px rgba(0, 242, 254, 0.08);
+}
+
+.meeting-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(99, 102, 241, 0.08));
+  border-bottom: 1px solid rgba(0, 242, 254, 0.1);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--cyan);
+}
+
+.meeting-card-header i {
+  font-size: 16px;
+}
+
+.meeting-card-body {
+  padding: 16px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.meeting-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  flex-wrap: wrap;
+}
+
+.meeting-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.meeting-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.meeting-btn-confirm {
+  background: linear-gradient(135deg, var(--cyan), #10b981);
+  color: #0a0e17;
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.25);
+}
+
+.meeting-btn-confirm:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+}
+
+.meeting-btn-edit {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.meeting-btn-edit:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.meeting-btn-cancel {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.meeting-btn-cancel:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+}
+
+/* ── Success Card ────────────────────────────────────────────────────────── */
+
+.meeting-success-card {
+  margin: 12px 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(0, 242, 254, 0.06));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: meetingSuccessIn 0.6s ease-out;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1);
+}
+
+.meeting-success-icon {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 8px;
+}
+
+.meeting-success-icon i {
+  font-size: 36px;
+  color: #10b981;
+  animation: successPulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.4));
+}
+
+.meeting-success-body {
+  padding: 8px 18px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+
+@keyframes successPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes meetingSuccessIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Cancel Bar ──────────────────────────────────────────────────────────── */
+
+.meeting-cancel-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0 4px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  animation: meetingFadeIn 0.3s ease-out;
+}
+
+.meeting-cancel-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.meeting-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 6px;
+  color: #ef4444;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.meeting-cancel-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+}
+
+.meeting-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Shared Animation ────────────────────────────────────────────────────── */
+
+@keyframes meetingFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Floating Chat (Light Theme) UI Overrides ──────────────────────────────── */
+.chat-body .meeting-confirmation-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 242, 254, 0.12);
+}
+.chat-body .meeting-card-header {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(99, 102, 241, 0.1));
+  border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+  color: #0f172a;
+}
+.chat-body .meeting-card-body {
+  color: #0f172a;
+}
+.chat-body .meeting-btn-edit {
+  background: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+}
+.chat-body .meeting-btn-edit:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.1);
+}
+.chat-body .meeting-success-card {
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.12);
+}
+.chat-body .meeting-success-body {
+  color: #0f172a;
+}
+.chat-body .meeting-cancel-bar {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.chat-body .meeting-cancel-hint {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+

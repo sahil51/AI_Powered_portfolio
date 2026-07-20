@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    PORTFOLIO — MAIN.JS
-   Extracted from index.html — exact same functionality
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // TYPED ROLES — roles array is injected from Django template via window.TYPED_ROLES
@@ -87,8 +86,89 @@ document.querySelectorAll('.mm-link').forEach(a => a.addEventListener('click', (
   if (mobileMenu) mobileMenu.classList.remove('open');
 }));
 
-// AI CHAT FLOATING WINDOW LOGIC
-const CHAT_API_URL = window.CHAT_API_URL || '/api/chat/'; // Update this to your microservice API URL
+// ═══════════════════════════════════════════════════════════════════════════
+// AI CHAT — LANGUAGE SELECTION + CHAT LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Meeting UI Helpers ─────────────────────────────────────────────────────
+
+function createMeetingProgressBar(progress) {
+  if (!progress || progress.cancelled) return null;
+  const pct = Math.round((progress.step / progress.total) * 100);
+  const wrap = document.createElement('div');
+  wrap.className = 'meeting-progress-bar';
+  wrap.innerHTML = `
+    <div class="meeting-progress-header">
+      <span class="meeting-progress-label"><i class="fa-solid fa-clipboard-list"></i> Interview Details</span>
+      <span class="meeting-progress-step">Step ${progress.step}/${progress.total}</span>
+    </div>
+    <div class="meeting-progress-track">
+      <div class="meeting-progress-fill" style="width: ${pct}%"></div>
+    </div>
+  `;
+  return wrap;
+}
+
+function createMeetingConfirmationCard(progress, botText) {
+  const card = document.createElement('div');
+  card.className = 'meeting-confirmation-card';
+
+  // Build details from the botText (which contains the summary)
+  let detailsHtml = botText.replace(/\n/g, '<br>');
+
+  card.innerHTML = `
+    <div class="meeting-card-header">
+      <i class="fa-solid fa-clipboard-check"></i>
+      <span>Review Interview Details</span>
+    </div>
+    <div class="meeting-card-body">${detailsHtml}</div>
+    <div class="meeting-card-actions">
+      <button class="meeting-btn meeting-btn-confirm" data-action="confirm">
+        <i class="fa-solid fa-check"></i> Confirm
+      </button>
+      <button class="meeting-btn meeting-btn-edit" data-action="edit">
+        <i class="fa-solid fa-pen"></i> Edit
+      </button>
+      <button class="meeting-btn meeting-btn-cancel" data-action="cancel">
+        <i class="fa-solid fa-xmark"></i> Cancel
+      </button>
+    </div>
+  `;
+  return card;
+}
+
+function createMeetingSuccessCard(botText) {
+  const card = document.createElement('div');
+  card.className = 'meeting-success-card';
+  let detailsHtml = botText.replace(/\n/g, '<br>');
+  card.innerHTML = `
+    <div class="meeting-success-icon">
+      <i class="fa-solid fa-calendar-check"></i>
+    </div>
+    <div class="meeting-success-body">${detailsHtml}</div>
+  `;
+  return card;
+}
+
+function createMeetingCancelBar() {
+  const bar = document.createElement('div');
+  bar.className = 'meeting-cancel-bar';
+  bar.innerHTML = `
+    <span class="meeting-cancel-hint">Interview scheduling in progress</span>
+    <button class="meeting-cancel-btn" data-action="cancel">
+      <i class="fa-solid fa-xmark"></i> Cancel
+    </button>
+  `;
+  return bar;
+}
+
+function removeMeetingUi(bodyEl) {
+  if (!bodyEl) return;
+  bodyEl.querySelectorAll('.meeting-progress-bar, .meeting-cancel-bar').forEach(el => el.remove());
+}
+
+
+const CHAT_API_URL = window.CHAT_API_URL || '/api/chat/';
 const chatBtn = document.getElementById('chatBtn');
 const chatWindow = document.getElementById('chatWindow');
 const chatClose = document.getElementById('chatClose');
@@ -97,7 +177,6 @@ const chatBody = document.getElementById('chatBody');
 const chatInput = document.getElementById('chatInput');
 const chatSend = document.getElementById('chatSend');
 
-// Fullscreen elements
 const chatFullscreen = document.getElementById('chatFullscreen');
 const chatFsClose = document.getElementById('chatFsClose');
 const chatFsBody = document.getElementById('chatFsBody');
@@ -113,7 +192,11 @@ if (!chatSessionId) {
   localStorage.setItem(CHAT_SESSION_KEY, chatSessionId);
 }
 
+const LANGUAGE_KEY = 'USER_LANGUAGE';
+let userLanguage = localStorage.getItem(LANGUAGE_KEY) || '';
+
 let chatSocket = null;
+let inMeetingFlow = false;
 
 function removeTypingIndicators() {
   document.querySelectorAll('.typing-indicator').forEach(el => el.remove());
@@ -125,55 +208,40 @@ function resetAvatarState() {
 }
 
 function connectWebSocket() {
-  console.log('Django API mode: Chat endpoint initialized.');
+  console.log('Chat endpoint initialized.');
   chatSocket = {
-    readyState: 1, // WebSocket.OPEN
+    readyState: 1,
     send: async function(dataStr) {
       const data = JSON.parse(dataStr);
       const incomingMsg = (data.message || "").trim();
-      const role = data.visitor_role || visitorRole;
-      
-      // If it's a role update message, show role confirmation
-      if (!incomingMsg && role) {
-        try {
-          await fetch(CHAT_API_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: dataStr
-          });
-          setTimeout(() => {
-            showRoleConfirmation(role);
-          }, 300);
-        } catch (err) {
-          console.error('Role update error:', err);
-        }
-        return;
-      }
-      
+      const sid = data.session_id || chatSessionId;
+      const lang = data.language || userLanguage;
+
+      const payload = { ...data, session_id: sid, language: lang };
+      const payloadStr = JSON.stringify(payload);
+
       try {
         const response = await fetch(CHAT_API_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Internal-API-Key': 'd59e355c3c0a2b0b14467d55ed59e211e40562e8484196144e54823293883bfd'
           },
-          body: dataStr
+          body: payloadStr
         });
-        
+
         if (!response.ok) {
           throw new Error("Server error, please try again.");
         }
-        
+
         const resData = await response.json();
         const responseText = resData.message;
-        
-        // Remove typing indicators
+        const meetingProgress = resData.meeting_progress || null;
+        const intentType = resData.intent || '';
+
         removeTypingIndicators();
-        
-        // Avatar speaking state
+
         if (avatarRing) {
           avatarRing.classList.remove('thinking');
           avatarRing.classList.add('speaking');
@@ -183,44 +251,92 @@ function connectWebSocket() {
           avatarStatus.classList.remove('thinking-status');
           avatarStatus.textContent = 'Online';
         }
-        
-        // Render bot message
-        let botHtml = responseText || "Hi! I am Daisy, Sahil's AI assistant.";
+
+        let botHtml = responseText || "Hello! I'm Daisy, Sahil's AI assistant.";
         botHtml = botHtml.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--cyan);text-decoration:underline;font-weight:600;">$1</a>');
-        botHtml = botHtml.replace(/(^|[^"'=])(https?:\/\/[a-zA-Z0-9\-\.\/\?\&\=\+\%_:]+)/g, '$1<a href="$2" target="_blank" style="color:var(--cyan);text-decoration:underline;font-weight:600;">$2</a>');
+        botHtml = botHtml.replace(/(^|[^"'=])(https?:\/\/[^\s<">]+)/g, '$1<a href="$2" target="_blank" style="color:var(--cyan);text-decoration:underline;font-weight:600;">$2</a>');
         botHtml = botHtml.replace(/\n/g, '<br>');
-        
+
         const addBotMsg = (bodyEl) => {
           if (!bodyEl) return;
+
+          // Remove old meeting UI elements
+          removeMeetingUi(bodyEl);
+
+          // Meeting confirmed/success — show plain message, reset meeting flow
+          if (intentType === 'meeting_confirmed') {
+            inMeetingFlow = false;
+            startSuggestionCycle();
+            const bMsg = document.createElement('div');
+            bMsg.className = 'chat-msg bot bot-new';
+            bMsg.innerHTML = botHtml;
+            bodyEl.appendChild(bMsg);
+            setTimeout(() => bodyEl.scrollTop = bodyEl.scrollHeight, 50);
+            return;
+          }
+
+          // Meeting cancelled — show plain message, reset meeting flow
+          if (intentType === 'meeting_cancelled') {
+            inMeetingFlow = false;
+            startSuggestionCycle();
+            const bMsg = document.createElement('div');
+            bMsg.className = 'chat-msg bot bot-new';
+            bMsg.innerHTML = botHtml;
+            bodyEl.appendChild(bMsg);
+            setTimeout(() => bodyEl.scrollTop = bodyEl.scrollHeight, 50);
+            return;
+          }
+
+          // Active meeting flow state tracking
+          if (meetingProgress && !meetingProgress.cancelled && (intentType === 'meeting' || intentType === 'meeting_edit' || intentType === 'meeting_confirmation')) {
+            inMeetingFlow = true;
+            stopSuggestionCycle();
+          } else {
+            if (!meetingProgress || meetingProgress.cancelled) {
+              inMeetingFlow = false;
+              if (userLanguage) {
+                startSuggestionCycle();
+              }
+            }
+          }
+
+          // 1. Append Bot Chat Message bubble FIRST
           const bMsg = document.createElement('div');
           bMsg.className = 'chat-msg bot bot-new';
           bMsg.innerHTML = botHtml;
-          
+
           const activeTypings = Array.from(bodyEl.querySelectorAll('.typing-indicator'));
           if (activeTypings.length > 0) {
               bodyEl.insertBefore(bMsg, activeTypings[0]);
           } else {
               bodyEl.appendChild(bMsg);
           }
+
+          // 2. Append Progress Bar & Cancel Bar BELOW the bot message
+          if (meetingProgress && !meetingProgress.cancelled && inMeetingFlow) {
+            const progressBar = createMeetingProgressBar(meetingProgress);
+            if (progressBar) bodyEl.appendChild(progressBar);
+            const cancelBar = createMeetingCancelBar();
+            if (cancelBar) bodyEl.appendChild(cancelBar);
+          }
+
           setTimeout(() => {
               bodyEl.scrollTop = bodyEl.scrollHeight;
           }, 50);
         };
-        
+
         addBotMsg(chatBody);
         addBotMsg(chatFsBody);
-        
+
         document.querySelectorAll('.chat-tick--delivered').forEach(tick => {
           tick.className = 'chat-tick chat-tick--seen';
           tick.innerHTML = '✓✓';
         });
-        
-        syncRoleUi();
       } catch (err) {
         console.error('Chat API error:', err);
         removeTypingIndicators();
         resetAvatarState();
-        
+
         const errMsg = err.message || "An error occurred while connecting to the AI.";
         const addErrorMsg = (bodyEl) => {
           if (!bodyEl) return;
@@ -235,7 +351,7 @@ function connectWebSocket() {
       }
     }
   };
-  
+
   setTimeout(() => {
     if (chatSocket.onopen) chatSocket.onopen();
   }, 100);
@@ -256,209 +372,152 @@ function getCookie(name) {
   return cookieValue;
 }
 
+// ── Suggestion Chips ────────────────────────────────────────────────────────
 
-const VISITOR_ROLE_KEY = 'VISITOR_ROLE';
-let visitorRole = localStorage.getItem(VISITOR_ROLE_KEY) || '';
-
-function normalizeRole(role) {
-  const value = (role || '').trim().toLowerCase();
-  return value === 'client' || value === 'recruiter' || value === 'visitor' ? value : '';
-}
-
-const clientQuestions = [
-  "What services do you offer?",
-  "Can you build a custom AI agent for me?",
-  "What is your tech stack for backend development?",
-  "Have you built any complex platforms?",
-  "Where can I find Sahil's resume?",
-  "Can we discuss a project?",
-  "Can you integrate AI into my existing app?",
-  "What is your availability for a new contract?",
-  "I want to schedule a meeting with Sahil."
+const suggestionQuestionsEn = [
+  "Who is the portfolio owner?",
+  "What projects have been built?",
+  "What skills are available?",
+  "Can I see the resume?",
+  "How can I contact?",
+  "I want to schedule an interview",
 ];
 
-const recruiterQuestions = [
-  "Are you open to full-time roles?",
-  "Can I get your latest resume?",
-  "Where can I find Sahil's resume?",
-  "What is your notice period?",
-  "Do you have experience with system design?",
-  "Which programming languages are you most comfortable with?",
-  "Are you willing to relocate?",
-  "What are your salary expectations?",
-  "Can we schedule a technical interview?"
+const suggestionQuestionsHi = [
+  "Portfolio owner kaun hain?",
+  "Kaun se projects banaye hain?",
+  "Kya skills hain?",
+  "Kya main resume dekh sakta hoon?",
+  "Kaise contact karun?",
+  "Main interview schedule karna chahta hoon",
 ];
-
-const visitorQuestions = [
-  "Who is Sahil Thakur?",
-  "What projects has Sahil built?",
-  "Where can I find Sahil's resume?",
-  "What AI tools does Sahil work with?",
-  "What is Sahil's main tech stack?",
-  "How can I contact Sahil?",
-  "Where did Sahil study?"
-];
-
-function getRandomQuestions(role, count = 3) {
-  let list = visitorQuestions;
-  if (role === 'client') list = clientQuestions;
-  if (role === 'recruiter') list = recruiterQuestions;
-  
-  const shuffled = [...list].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
 
 let suggestionInterval = null;
 
-function updateDynamicSuggestions(role) {
+function updateSuggestions() {
   const suggestions = document.getElementById('chatSuggestions');
   const fsSuggestions = document.getElementById('chatFsSuggestions');
-  
-  if (suggestionInterval) {
-    clearInterval(suggestionInterval);
-    suggestionInterval = null;
-  }
-  
-  if (!role) {
+  if (!suggestions && !fsSuggestions) return;
+
+  if (!userLanguage) {
     if (suggestions) suggestions.style.display = 'none';
     if (fsSuggestions) fsSuggestions.style.display = 'none';
     return;
   }
-  
-  if (suggestions) suggestions.style.display = 'flex';
-  if (fsSuggestions) fsSuggestions.style.display = 'flex';
-  
-  function render() {
-    const randomQs = getRandomQuestions(role, 3);
-    let html = '';
-    randomQs.forEach(q => {
-      html += `<button class="suggestion-chip" style="animation: fadein 0.5s;" data-q="${q}"><i class="fa-regular fa-comment-dots"></i> ${q}</button>`;
-    });
-    
-    if (suggestions && suggestions.style.display !== 'none') {
-      suggestions.innerHTML = html;
-    }
-    if (fsSuggestions && fsSuggestions.style.display !== 'none') {
-      fsSuggestions.innerHTML = html;
-    }
-  }
 
-  render();
-  
-  // Automatically cycle questions every 6 seconds
-  suggestionInterval = setInterval(() => {
-    // Clear interval if user sent a message and suggestions were hidden
-    if ((!suggestions || suggestions.style.display === 'none') && 
-        (!fsSuggestions || fsSuggestions.style.display === 'none')) {
-      clearInterval(suggestionInterval);
-      suggestionInterval = null;
-      return;
-    }
-    render();
-  }, 6000);
+  const list = userLanguage === 'hindi' ? suggestionQuestionsHi : suggestionQuestionsEn;
+  const shuffled = [...list].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 4);
+
+  let html = '';
+  selected.forEach(q => {
+    html += `<button class="suggestion-chip" data-q="${q}"><i class="fa-regular fa-comment-dots"></i> ${q}</button>`;
+  });
+
+  if (suggestions) { suggestions.style.display = 'flex'; suggestions.innerHTML = html; }
+  if (fsSuggestions) { fsSuggestions.style.display = 'flex'; fsSuggestions.innerHTML = html; }
 }
 
-function syncRoleUi() {
-  if (!visitorRole) {
-    if (chatInput) { chatInput.disabled = true; chatInput.placeholder = "Please select an option above..."; }
+function startSuggestionCycle() {
+  if (suggestionInterval) clearInterval(suggestionInterval);
+  updateSuggestions();
+  suggestionInterval = setInterval(() => updateSuggestions(), 7000);
+}
+
+function stopSuggestionCycle() {
+  if (suggestionInterval) { clearInterval(suggestionInterval); suggestionInterval = null; }
+  const suggestions = document.getElementById('chatSuggestions');
+  const fsSuggestions = document.getElementById('chatFsSuggestions');
+  if (suggestions) suggestions.style.display = 'none';
+  if (fsSuggestions) fsSuggestions.style.display = 'none';
+}
+
+// ── Language Selection ─────────────────────────────────────────────────────
+
+function syncLanguageUi() {
+  if (!userLanguage) {
+    if (chatInput) { chatInput.disabled = true; chatInput.placeholder = "Please select a language above..."; }
     if (chatSend) chatSend.disabled = true;
-    if (chatFsInput) { chatFsInput.disabled = true; chatFsInput.placeholder = "Please select an option above..."; }
+    if (chatFsInput) { chatFsInput.disabled = true; chatFsInput.placeholder = "Please select a language above..."; }
     if (chatFsSend) chatFsSend.disabled = true;
-    updateDynamicSuggestions(null);
+    stopSuggestionCycle();
     return;
   }
-  
+
   if (chatInput) { chatInput.disabled = false; chatInput.placeholder = "Ask me anything about Sahil..."; }
   if (chatSend) chatSend.disabled = false;
   if (chatFsInput) { chatFsInput.disabled = false; chatFsInput.placeholder = "Ask me anything about Sahil..."; }
   if (chatFsSend) chatFsSend.disabled = false;
-  
-  updateDynamicSuggestions(visitorRole);
 
-  const chipContainers = document.querySelectorAll('.role-gate-options');
-  chipContainers.forEach(c => c.style.display = 'none');
+  const langChips = document.querySelectorAll('.lang-gate-options');
+  langChips.forEach(c => c.style.display = 'none');
+
+  if (!inMeetingFlow) {
+    startSuggestionCycle();
+  } else {
+    stopSuggestionCycle();
+  }
 }
 
-function showRoleConfirmation(role) {
-  let message = "Thanks. I will keep the conversation tailored for a general visitor.";
-  if (role === "client") message = "Thanks. I will keep the conversation tailored for a client.";
-  if (role === "recruiter") message = "Thanks. I will keep the conversation tailored for a recruiter.";
-
-  [chatBody, chatFsBody].forEach(bodyEl => {
-    if (!bodyEl) return;
-    const msgEl = document.createElement('div');
-    msgEl.className = 'chat-msg bot role-confirmation';
-    msgEl.textContent = message;
-    bodyEl.appendChild(msgEl);
-    bodyEl.scrollTop = bodyEl.scrollHeight;
-  });
-  syncRoleUi();
-}
-
-function insertRolePrompt(bodyEl, text) {
-  if (!bodyEl || bodyEl.querySelector('.role-gate')) return;
-
-  const promptText = text || "Hello! I am Sahil's AI assistant. To ensure I provide the most relevant information, could you tell me if you are connecting as a Recruiter, a Client/Service Inquiry, or just exploring?";
+function insertLanguagePrompt(bodyEl) {
+  if (!bodyEl || bodyEl.querySelector('.lang-gate')) return;
 
   const prompt = document.createElement('div');
-  prompt.className = 'role-gate';
+  prompt.className = 'lang-gate';
   prompt.innerHTML = `
     <div class="chat-msg bot">
-      <i class="fa-solid fa-hand-wave" style="color:var(--cyan);margin-right:6px;"></i>
-      ${promptText}
+      <i class="fa-solid fa-globe" style="color:var(--cyan);margin-right:6px;"></i>
+      Hello! Please select your preferred language / Apni pasandida bhasha chunein:
     </div>
-    <div class="chat-suggestions role-gate-options" style="flex-wrap: wrap; margin-top: 10px;">
-      <button class="suggestion-chip role-chip" data-role="client"><i class="fa-solid fa-briefcase"></i> Client</button>
-      <button class="suggestion-chip role-chip" data-role="recruiter"><i class="fa-solid fa-user-tie"></i> Recruiter</button>
-      <button class="suggestion-chip role-chip" data-role="visitor"><i class="fa-solid fa-compass"></i> Just Exploring</button>
+    <div class="chat-suggestions lang-gate-options" style="flex-wrap: wrap; margin-top: 10px;">
+      <button class="suggestion-chip lang-chip" data-lang="english"><i class="fa-solid fa-language"></i> English</button>
+      <button class="suggestion-chip lang-chip" data-lang="hindi"><i class="fa-solid fa-language"></i> हिन्दी</button>
     </div>
   `;
   bodyEl.insertBefore(prompt, bodyEl.firstChild);
 }
 
-function ensureRoleGate(dynamicText) {
-  if (visitorRole) {
-    syncRoleUi();
+function ensureLanguageSelection() {
+  if (userLanguage) {
+    syncLanguageUi();
     return;
   }
-  const introText = dynamicText || "Hello! I am Sahil's AI assistant. To ensure I provide the most relevant information, could you tell me if you are connecting as a Recruiter, a Client/Service Inquiry, or just exploring?";
+
   const introTargets = [chatBody, chatFsBody];
   introTargets.forEach(bodyEl => {
     if (!bodyEl) return;
     const firstBot = bodyEl.querySelector('.chat-msg.bot');
-    if (firstBot && !firstBot.classList.contains('role-confirmation') && !firstBot.closest('.role-gate')) {
+    if (firstBot) {
       firstBot.remove();
     }
   });
-  insertRolePrompt(chatBody, introText);
-  insertRolePrompt(chatFsBody, introText);
-  syncRoleUi();
+  insertLanguagePrompt(chatBody);
+  insertLanguagePrompt(chatFsBody);
+  syncLanguageUi();
 }
 
 document.addEventListener('click', (e) => {
-  const chip = e.target.closest('.role-chip');
+  const chip = e.target.closest('.lang-chip');
   if (chip) {
-    const rawRole = chip.dataset.role;
-    const role = normalizeRole(rawRole);
-    if (role) {
-      visitorRole = role;
-      localStorage.setItem(VISITOR_ROLE_KEY, role);
-      syncRoleUi();
-      
-      // Notify WebSocket of the selected role
+    const lang = chip.dataset.lang;
+    if (lang === 'english' || lang === 'hindi') {
+      userLanguage = lang;
+      localStorage.setItem(LANGUAGE_KEY, lang);
+      syncLanguageUi();
+
       if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
         chatSocket.send(JSON.stringify({
           message: "",
-          visitor_role: role
+          language: lang
         }));
       }
     }
   }
 });
 
+// ── Chat Window Logic ──────────────────────────────────────────────────────
 
 if (chatBtn && chatWindow) {
-  // Toggle mini chat window
   chatBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     chatWindow.classList.toggle('open');
@@ -467,7 +526,6 @@ if (chatBtn && chatWindow) {
     }
   });
 
-  // Open chat from nav links
   document.querySelectorAll('.open-chat').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -492,14 +550,12 @@ if (chatBtn && chatWindow) {
     });
   }
 
-  // Click outside to minimize mini chat
   document.addEventListener('click', (e) => {
     if (chatWindow.classList.contains('open') && !chatWindow.contains(e.target) && !chatBtn.contains(e.target) && !e.target.closest('.open-chat')) {
       chatWindow.classList.remove('open');
     }
   });
 
-  // Maximize chat
   if (chatMaximize && chatFullscreen) {
     chatMaximize.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -511,7 +567,6 @@ if (chatBtn && chatWindow) {
     });
   }
 
-  // Close Fullscreen chat
   if (chatFsClose) {
     chatFsClose.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -520,28 +575,47 @@ if (chatBtn && chatWindow) {
     });
   }
 
-  // SUGGESTION CHIP CLICKS (Delegated so it works with dynamically generated chips)
+  // ── Suggestion chip clicks ──────────────────────────────────────────────
   document.addEventListener('click', (e) => {
     const chip = e.target.closest('.suggestion-chip[data-q]');
     if (chip) {
       const question = chip.dataset.q;
-      const suggestions = document.getElementById('chatSuggestions');
-      const fsSuggestions = document.getElementById('chatFsSuggestions');
-      
+      stopSuggestionCycle();
+
       if (chatFullscreen && chatFullscreen.classList.contains('open')) {
         if (chatFsInput) {
           chatFsInput.value = question;
-          if (fsSuggestions) fsSuggestions.style.display = 'none';
-          if (suggestions) suggestions.style.display = 'none';
           handleSend(question, chatFsInput, chatFsSend, chatFsBody, chatBody);
         }
       } else {
         if (chatInput) {
           chatInput.value = question;
-          if (suggestions) suggestions.style.display = 'none';
-          if (fsSuggestions) fsSuggestions.style.display = 'none';
           handleSend(question, chatInput, chatSend, chatBody, chatFsBody);
         }
+      }
+    }
+  });
+
+  // ── Meeting action button clicks (confirm/edit/cancel) ─────────────────
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.meeting-btn, .meeting-cancel-btn');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (!action) return;
+
+    // Disable all meeting buttons to prevent double-clicks
+    document.querySelectorAll('.meeting-btn, .meeting-cancel-btn').forEach(b => b.disabled = true);
+
+    // Send the action as a chat message
+    if (chatFullscreen && chatFullscreen.classList.contains('open')) {
+      if (chatFsInput) {
+        chatFsInput.value = action;
+        handleSend(action, chatFsInput, chatFsSend, chatFsBody, chatBody);
+      }
+    } else {
+      if (chatInput) {
+        chatInput.value = action;
+        handleSend(action, chatInput, chatSend, chatBody, chatFsBody);
       }
     }
   });
@@ -556,7 +630,6 @@ if (chatBtn && chatWindow) {
     return tick;
   }
 
-  // ── Typing dots indicator ───────────────────────────────────────────────
   function createTypingIndicator() {
     const wrap = document.createElement('div');
     wrap.className = 'chat-msg bot typing-indicator';
@@ -564,25 +637,21 @@ if (chatBtn && chatWindow) {
     return wrap;
   }
 
-  // Handle send logic for either input
   async function handleSend(text, inputEl, sendBtnEl, targetBody, altBody) {
     if (!text) return;
 
-    // Do NOT disable inputs, allowing the user to continue chatting asynchronously.
-
-    // Helper to add user msg to a body
     const addUserMsg = (bodyEl) => {
       if (!bodyEl) return null;
       const uWrap = document.createElement('div');
       uWrap.className = 'chat-msg-wrap user-wrap';
       const uMsg = document.createElement('div');
       uMsg.className = 'chat-msg user';
-      
+
       const textSpan = document.createElement('span');
       textSpan.textContent = text;
-      
+
       const tickEl = createTick('sent');
-      
+
       uMsg.appendChild(textSpan);
       uMsg.appendChild(tickEl);
       uWrap.appendChild(uMsg);
@@ -596,29 +665,21 @@ if (chatBtn && chatWindow) {
 
     if (inputEl) inputEl.value = '';
 
-    const suggestionsEl = document.getElementById('chatSuggestions');
-    const fsSuggestionsEl = document.getElementById('chatFsSuggestions');
-    if (suggestionsEl) suggestionsEl.style.display = 'none';
-    if (fsSuggestionsEl) fsSuggestionsEl.style.display = 'none';
-
-    // Short delay then show double gray tick (delivered)
     await new Promise(r => setTimeout(r, 400));
     if (tick1) { tick1.className = 'chat-tick chat-tick--delivered'; tick1.innerHTML = '✓✓'; }
     if (tick2) { tick2.className = 'chat-tick chat-tick--delivered'; tick2.innerHTML = '✓✓'; }
 
-    // Show typing dots in both
     const typing1 = createTypingIndicator();
     const typing2 = createTypingIndicator();
-    if (chatBody) { 
-        chatBody.appendChild(typing1); 
-        setTimeout(() => chatBody.scrollTop = chatBody.scrollHeight, 50); 
+    if (chatBody) {
+        chatBody.appendChild(typing1);
+        setTimeout(() => chatBody.scrollTop = chatBody.scrollHeight, 50);
     }
-    if (chatFsBody) { 
-        chatFsBody.appendChild(typing2); 
-        setTimeout(() => chatFsBody.scrollTop = chatFsBody.scrollHeight, 50); 
+    if (chatFsBody) {
+        chatFsBody.appendChild(typing2);
+        setTimeout(() => chatFsBody.scrollTop = chatFsBody.scrollHeight, 50);
     }
 
-    // Avatar thinking state
     if (avatarRing) avatarRing.classList.add('thinking');
     if (avatarStatus) { avatarStatus.classList.add('thinking-status'); avatarStatus.textContent = 'Typing...'; }
 
@@ -626,7 +687,7 @@ if (chatBtn && chatWindow) {
       if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
         chatSocket.send(JSON.stringify({
           message: text,
-          visitor_role: visitorRole
+          language: userLanguage
         }));
       } else {
         console.warn("WebSocket is not open. Trying to reconnect...");
@@ -650,9 +711,10 @@ if (chatBtn && chatWindow) {
       if (avatarStatus) { avatarStatus.classList.remove('thinking-status'); avatarStatus.textContent = 'Online'; }
     }
 
-    // Keep inputs enabled
-    syncRoleUi();
-    if (visitorRole && inputEl) {
+    if (!inMeetingFlow) {
+        syncLanguageUi();
+    }
+    if (userLanguage && inputEl) {
         inputEl.focus();
     }
   }
@@ -672,10 +734,8 @@ if (chatBtn && chatWindow) {
   }
 }
 
-// Ensure the chat inputs and role gate are correctly initialized on load
-ensureRoleGate();
+ensureLanguageSelection();
 connectWebSocket();
-
 
 // ─────────────────────────────────────────────────────────────────
 //  THOUGHT BUBBLE  — cycles curious AI thoughts above the avatar
@@ -691,13 +751,12 @@ connectWebSocket();
   const thoughts = [
     "Who are you?",
     "What brings you here?",
-    "Are you a recruiter?",
     "Looking for a developer?",
     "Need a custom AI solution?",
     "Want to collaborate?",
     "Looking for Sahil's resume?",
     "Curious about Sahil's work?",
-    "Want to schedule a meeting?",
+    "Want to schedule an interview?",
     "Got a project in mind?",
   ];
 
@@ -715,16 +774,13 @@ connectWebSocket();
       bubble.classList.remove('visible');
       return;
     }
-    // Fade out
     bubble.classList.remove('visible');
     setTimeout(() => {
-      // Update text and re-trigger CSS animation
       const liveText = document.getElementById('chatThoughtText');
       if (liveText) {
         liveText.textContent = thoughts[idx];
-        // Re-trigger animation by toggling the class
         liveText.classList.remove('chat-thought-text');
-        void liveText.offsetWidth; // force reflow
+        void liveText.offsetWidth;
         liveText.classList.add('chat-thought-text');
       }
       bubble.classList.add('visible');
@@ -732,20 +788,17 @@ connectWebSocket();
     }, 350);
   }
 
-  // Start after 2 seconds, then every 4s
   setTimeout(() => {
     showThought();
     cycleTimer = setInterval(showThought, 4000);
   }, 2000);
 
-  // Hide when chat opens
   function hideOnOpen() {
     bubble.classList.remove('visible');
     hidden = true;
     clearInterval(cycleTimer);
   }
 
-  // Reshow when chat closes
   function reshowOnClose() {
     hidden = false;
     idx = Math.floor(Math.random() * thoughts.length);
