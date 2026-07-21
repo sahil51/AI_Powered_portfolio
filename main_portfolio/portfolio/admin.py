@@ -53,7 +53,22 @@ class ContactMessageAdmin(admin.ModelAdmin):
 
 @admin.register(HeroInfo)
 class HeroInfoAdmin(admin.ModelAdmin):
-    list_display = ('name', 'location', 'current_company')
+    list_display = ('name', 'role', 'terminal_title', 'class_name', 'current_company', 'open_to_work')
+    fieldsets = (
+        ('Basic Profile Info', {
+            'fields': ('name', 'role', 'location', 'short_intro', 'about_me', 'email', 'phone', 'contact_description')
+        }),
+        ('Social Links & Resume', {
+            'fields': ('linkedin_url', 'github_url', 'portfolio_url', 'resume')
+        }),
+        ('Hero Code Terminal Card (Right Card)', {
+            'fields': ('terminal_title', 'class_name', 'current_company', 'tech_stack', 'ai_expertise', 'open_to_work'),
+            'description': 'Manage the values displayed inside the interactive Python Code Terminal Card on the right side of the Hero section.'
+        }),
+        ('Stats Counters', {
+            'fields': ('experience_years', 'ai_agents_built', 'projects_completed')
+        }),
+    )
 
 @admin.register(ContactMethod)
 class ContactMethodAdmin(admin.ModelAdmin):

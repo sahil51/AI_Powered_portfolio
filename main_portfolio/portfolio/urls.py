@@ -9,4 +9,5 @@ urlpatterns = [
     path('blog/<slug:slug>/', views.blog_detail_view, name='blog_detail'),
     path('visitors/', views.visitors_view, name='visitors'),
     path('contact/submit/', views.contact_submit_view, name='contact_submit'),
+    path('api/blog/create/', views.api_create_blog_post, name='api_create_blog_post'),
 ]

@@ -56,16 +56,61 @@ const counterObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.3 });
 document.querySelectorAll('.stat').forEach(el => counterObs.observe(el));
 
-// ACTIVE NAV
+// SCROLL PROGRESS BAR & ACTIVE NAV
 const sects = document.querySelectorAll('section[id]');
 const navAs = document.querySelectorAll('.nav-links a');
+const scrollProgressBar = document.getElementById('scrollProgress');
+
 window.addEventListener('scroll', () => {
+  // Update top scroll progress line
+  if (scrollProgressBar) {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+    scrollProgressBar.style.width = scrolled + '%';
+  }
+
+  // Active Nav Highlighting
   let cur = '';
   sects.forEach(s => { if (window.scrollY >= s.offsetTop - 130) cur = s.id; });
   navAs.forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
   });
 });
+
+// HERO TERMINAL COPY BUTTON
+const termCopyBtn = document.getElementById('termCopyBtn');
+if (termCopyBtn) {
+  termCopyBtn.addEventListener('click', () => {
+    const termBody = document.querySelector('.term-body');
+    if (!termBody) return;
+    const codeText = termBody.innerText || termBody.textContent;
+    navigator.clipboard.writeText(codeText.trim()).then(() => {
+      termCopyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+      termCopyBtn.style.color = '#10B981';
+      termCopyBtn.style.borderColor = '#10B981';
+      setTimeout(() => {
+        termCopyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+        termCopyBtn.style.color = '#94a3b8';
+        termCopyBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+      }, 2500);
+    }).catch(() => {});
+  });
+}
+
+// PROACTIVE AI THOUGHT BUBBLE NUDGE
+setTimeout(() => {
+  const bubble = document.getElementById('chatThoughtBubble');
+  const textEl = document.getElementById('chatThoughtText');
+  if (bubble && textEl && !sessionStorage.getItem('ai_nudge_shown')) {
+    textEl.innerHTML = 'Hi! Click to schedule an interview with Sahil 👋';
+    bubble.classList.add('visible');
+    sessionStorage.setItem('ai_nudge_shown', 'true');
+    setTimeout(() => {
+      bubble.classList.remove('visible');
+    }, 6000);
+  }
+}, 3500);
 
 // MOBILE MENU
 const hamburger = document.getElementById('hamburger');

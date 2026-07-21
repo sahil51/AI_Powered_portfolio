@@ -1,38 +1,53 @@
 {% extends 'portfolio/base.html' %}
 {% load static %}
 
-{% block title %}{{ blog.title }} | Sahil Thakur{% endblock %}
+{% block title %}{{ blog.title }} | Sahil Thakur Blog{% endblock %}
 {% block description %}{{ blog.summary }}{% endblock %}
 
 {% block extra_css %}
 <style>
+  .blog-post-wrapper {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    padding: 48px 56px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+  }
   .blog-post-content {
-    line-height: 1.8;
-    color: var(--muted);
-    font-size: 16px;
+    line-height: 1.85;
+    color: #334155;
+    font-size: 17px;
     font-family: 'Inter', sans-serif;
   }
   .blog-post-content h2, .blog-post-content h3 {
-    color: #FFFFFF;
+    color: #0F172A;
     font-family: 'Space Grotesk', sans-serif;
-    margin-top: 40px;
+    font-weight: 700;
+    margin-top: 36px;
     margin-bottom: 16px;
+    letter-spacing: -0.5px;
   }
   .blog-post-content p {
     margin-bottom: 24px;
   }
   .blog-post-content pre {
-    background: #1e1e2f;
-    padding: 20px;
-    border-radius: 12px;
+    background: #0F172A;
+    color: #F8FAFC;
+    padding: 24px;
+    border-radius: 14px;
     overflow-x: auto;
-    border: 1px solid rgba(255,255,255,0.05);
-    margin: 24px 0;
+    border: 1px solid #1E293B;
+    margin: 28px 0;
   }
   .blog-post-content code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    color: var(--cyan);
+    font-size: 14.5px;
+    color: #38BDF8;
+  }
+  @media (max-width: 768px) {
+    .blog-post-wrapper {
+      padding: 28px 24px;
+    }
   }
 </style>
 {% endblock %}
@@ -40,16 +55,57 @@
 {% block content %}
 <main>
     
-<section style="padding: 120px 5vw 80px; min-height: 80vh; max-width: 800px; margin: 0 auto;">
-  <div class="section-inner">
-    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan); margin-bottom: 12px;">
-      <a href="{% url 'portfolio:blog_list' %}" style="color: var(--cyan); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a> &nbsp;·&nbsp; {{ blog.created_at|date:"F d, Y" }}
+<section style="padding: 120px 6vw 80px; min-height: 85vh; background: var(--bg);">
+  <div style="max-width: 860px; margin: 0 auto;">
+    
+    <!-- Navigation Breadcrumb -->
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan); margin-bottom: 24px; font-weight: 600;">
+      <a href="{% url 'portfolio:blog_list' %}" style="color: var(--cyan); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Back to All Articles</a>
     </div>
-    
-    <h1 class="section-title reveal visible" style="text-align: left; margin-bottom: 24px; font-size: clamp(32px, 5vw, 48px);">{{ blog.title }}</h1>
-    
-    <div class="blog-post-content">
-      {{ blog.content|safe }}
+
+    <!-- Article Container -->
+    <div class="blog-post-wrapper reveal visible">
+      
+      <!-- Metadata Row -->
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+        <span style="background: rgba(37, 99, 235, 0.08); color: var(--cyan); font-weight: 700; font-size: 12px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;">
+          Engineering Article
+        </span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748B;">
+          <i class="fa-regular fa-calendar" style="margin-right: 4px;"></i> {{ blog.created_at|date:"F d, Y" }}
+        </span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748B;">
+          <i class="fa-regular fa-user" style="margin-right: 4px;"></i> Sahil Thakur
+        </span>
+      </div>
+      
+      <!-- Article Title -->
+      <h1 style="font-size: clamp(28px, 4.5vw, 42px); font-weight: 800; color: #0F172A; line-height: 1.25; margin-bottom: 24px; letter-spacing: -0.8px;">
+        {{ blog.title }}
+      </h1>
+
+      <!-- Summary Subtitle -->
+      <div style="font-size: 18px; line-height: 1.6; color: #475569; border-left: 3px solid var(--cyan); padding-left: 18px; margin-bottom: 36px; font-weight: 500;">
+        {{ blog.summary }}
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #E2E8F0; margin-bottom: 36px;">
+
+      <!-- Article Main Content -->
+      <div class="blog-post-content">
+        {{ blog.content|safe }}
+      </div>
+
+      <!-- Bottom Back Button -->
+      <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <a href="{% url 'portfolio:blog_list' %}" class="btn btn-ghost" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
+          ← Explore All Articles
+        </a>
+        <a href="{% url 'portfolio:home' %}#contact" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
+          Get in Touch with Sahil
+        </a>
+      </div>
+
     </div>
   </div>
 </section>

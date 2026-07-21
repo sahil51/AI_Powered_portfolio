@@ -97,9 +97,14 @@
     </div>
     <div>
       <div class="terminal">
-        <div class="term-bar">
-          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
-          <span class="term-title">{{ hero.terminal_title }}</span>
+        <div class="term-bar" style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <span class="term-title" style="margin-left: 8px;">{{ hero.terminal_title }}</span>
+          </div>
+          <button class="term-copy-btn" id="termCopyBtn" title="Copy Code" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;">
+            <i class="fa-regular fa-copy"></i> Copy
+          </button>
         </div>
         <div class="term-body">
           <div class="tl"><span class="t-k">class</span> <span class="t-n">{{ hero.class_name }}</span>:</div>
@@ -256,6 +261,52 @@
         </div>
       </div>
       {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- BLOGS (LATEST 3) -->
+<section id="blogs">
+  <div class="section-inner">
+    <div class="section-label reveal">Insights & Writing</div>
+    <h2 class="section-title reveal">Latest <span>Articles</span></h2>
+    
+    <div class="skills-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+      {% if latest_blogs %}
+        {% for blog in latest_blogs %}
+        <div class="skill-card reveal" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 250px;">
+          <div>
+            <div class="skill-card-header" style="margin-bottom: 14px;">
+              <div class="skill-card-icon">
+                <i class="fa-solid fa-file-invoice"></i>
+              </div>
+              <div class="skill-card-title">{{ blog.title }}</div>
+            </div>
+            <p style="color: #475569; font-size: 14.5px; line-height: 1.6; margin-bottom: 18px;">{{ blog.summary|truncatewords:24 }}</p>
+          </div>
+          <div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan); margin-bottom: 14px; font-weight: 600;">
+              <i class="fa-regular fa-calendar" style="margin-right: 4px;"></i> {{ blog.created_at|date:"F d, Y" }}
+            </div>
+            <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" class="btn btn-primary" style="font-size: 13px; text-decoration: none; border-radius: 8px; width: 100%; text-align: center; display: block; box-sizing: border-box; font-weight: 600; padding: 10px 16px;">
+              Read Article →
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center; padding: 40px 0; color: #64748B; grid-column: 1 / -1; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px;">
+          <i class="fa-solid fa-pen-nib" style="font-size: 32px; margin-bottom: 12px; color: var(--cyan);"></i>
+          <p style="margin: 0; font-size: 15px;">Articles coming soon! Stay tuned.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Explore All Blogs Button -->
+    <div style="text-align: center; margin-top: 40px;" class="reveal">
+      <a href="{% url 'portfolio:blog_list' %}" class="btn btn-ghost" style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; padding: 12px 28px; font-weight: 600;">
+        Explore All Articles <i class="fa-solid fa-arrow-right"></i>
+      </a>
     </div>
   </div>
 </section>

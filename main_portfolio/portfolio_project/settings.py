@@ -155,19 +155,19 @@ NOTIFICATION_EMAIL = os.getenv('NOTIFICATION_EMAIL', EMAIL_HOST_USER)
 
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "pulse",
+    "theme": "default",
     "dark_mode_theme": None,
 
     "navbar": "navbar-white navbar-light",
-    "brand_colour": "navbar-primary",
+    "brand_colour": False,
 
     "accent": "accent-primary",
 
-    "sidebar": "sidebar-dark-primary",
+    "sidebar": "sidebar-light-primary",
 
     "show_sidebar": True,
 
-    "no_navbar_border": True,
+    "no_navbar_border": False,
     "navbar_fixed": True,
 
     "layout_options": [
@@ -185,28 +185,29 @@ JAZZMIN_UI_TWEAKS = {
 }
 
 JAZZMIN_SETTINGS = {
-    "site_title": "Lucy Admin",
-    "site_header": "Lucy Portfolio",
-    "site_brand": "Portfolio powered by AI assistant",
-    "welcome_sign": "Welcome to Lucy Dashboard",
-    "copyright": "Lucy",
+    "site_title": "Portfolio Admin",
+    "site_header": "Portfolio Admin",
+    "site_brand": "Portfolio Admin",
+    "welcome_sign": "Welcome to Portfolio Admin",
+    "copyright": "Sahil Thakur",
 
     "show_sidebar": True,
     "navigation_expanded": True,
-    "custom_css": "portfolio/css/admin_custom.css",
 
     "icons": {
-        "auth.User": "fas fa-user",
-        "auth.Group": "fas fa-users",
-        "portfolio.Project": "fas fa-code",
-        "portfolio.Skill": "fas fa-tools",
-        "portfolio.SkillCategory": "fas fa-layer-group",
-        "portfolio.Experience": "fas fa-briefcase",
-        "portfolio.Education": "fas fa-graduation-cap",
-        "portfolio.BlogPost": "fas fa-blog",
-        "portfolio.Visitor": "fas fa-id-card",
-        "portfolio.ContactMessage": "fas fa-envelope",
+        "auth.User": "fas fa-user-shield",
+        "auth.Group": "fas fa-users-cog",
+        "portfolio.HeroInfo": "fas fa-user-tie",
         "portfolio.TypedRole": "fas fa-user-tag",
+        "portfolio.SkillCategory": "fas fa-layer-group",
+        "portfolio.Skill": "fas fa-tools",
+        "portfolio.Experience": "fas fa-briefcase",
+        "portfolio.Project": "fas fa-laptop-code",
+        "portfolio.Education": "fas fa-graduation-cap",
+        "portfolio.BlogPost": "fas fa-newspaper",
+        "portfolio.Visitor": "fas fa-calendar-check",
+        "portfolio.ContactMessage": "fas fa-envelope-open-text",
+        "portfolio.ContactMethod": "fas fa-address-card",
     },
 
     "topmenu_links": [

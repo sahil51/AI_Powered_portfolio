@@ -130,3 +130,67 @@ def contact_submit_view(request):
     return redirect('portfolio:home')
 
 
+from django.utils.text import slugify
+
+@csrf_exempt
+def api_create_blog_post(request):
+    """
+    Webhook API Endpoint for n8n / Telegram automation.
+    Accepts JSON payload to create and publish blog posts automatically.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed. Use POST.'}, status=405)
+
+    # Secret API Key verification
+    api_key_header = request.headers.get('X-Blog-API-Key') or request.META.get('HTTP_X_BLOG_API_KEY')
+    expected_key = getattr(settings, 'BLOG_WEBHOOK_SECRET_KEY', 'sahil_blog_secret_2026_key')
+
+    if api_key_header != expected_key:
+        return JsonResponse({'error': 'Unauthorized. Invalid or missing X-Blog-API-Key.'}, status=401)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON body.'}, status=400)
+
+    title = data.get('title', '').strip()
+    summary = data.get('summary', '').strip()
+    content = data.get('content', '').strip()
+    status_val = data.get('status', 'Published').strip()
+    custom_slug = data.get('slug', '').strip()
+
+    if not title or not content:
+        return JsonResponse({'error': 'Missing required fields: title and content are required.'}, status=400)
+
+    if not summary:
+        import re
+        clean_text = re.sub('<[^<]+?>', '', content)
+        summary = clean_text[:180] + '...' if len(clean_text) > 180 else clean_text
+
+    base_slug = slugify(custom_slug or title) or 'blog-post'
+    slug = base_slug
+    counter = 1
+    while BlogPost.objects.filter(slug=slug).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    blog = BlogPost.objects.create(
+        title=title,
+        slug=slug,
+        summary=summary,
+        content=content,
+        status=status_val if status_val in ['Published', 'Draft'] else 'Published'
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Blog post created and published successfully!',
+        'id': blog.id,
+        'title': blog.title,
+        'slug': blog.slug,
+        'status': blog.status,
+        'created_at': blog.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'url': f'/blog/{blog.slug}/'
+    }, status=201)
+
+
