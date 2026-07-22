@@ -23,10 +23,13 @@ load_dotenv(BASE_DIR / '.env', override=True)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-6ym1xv!hqy*(ir841tx$q0a!x0e3ja1##k&1j&)q^je*r3pg$i')
 
+# Universal API Security Key for external integrations (n8n, Webhooks, AI microservice)
+UNIVERSAL_API_KEY = os.getenv('UNIVERSAL_API_KEY', '8bb1ff6b2e8d1d6ea291d3f3f21dd505f1d3283d011ccc8b8452791b50fe3294')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -88,7 +91,6 @@ DATABASES = {
         'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'sslmode': 'require',
-            'prepare_threshold': 0,
         },
     }
 }

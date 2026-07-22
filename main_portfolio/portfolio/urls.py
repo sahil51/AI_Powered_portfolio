@@ -10,4 +10,5 @@ urlpatterns = [
     path('visitors/', views.visitors_view, name='visitors'),
     path('contact/submit/', views.contact_submit_view, name='contact_submit'),
     path('api/blog/create/', views.api_create_blog_post, name='api_create_blog_post'),
+    path('api/blog/add/', views.api_create_blog_post, name='api_add_blog_post'),
 ]

@@ -557,7 +557,7 @@ h1 {
 
 /* SECTIONS */
 section {
-  padding: 90px 6vw
+  padding: 56px 6vw
 }
 
 .section-inner {
@@ -578,7 +578,7 @@ section {
   font-size: clamp(26px, 3.2vw, 36px);
   font-weight: 800;
   letter-spacing: -0.6px;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   color: #0F172A;
 }
 

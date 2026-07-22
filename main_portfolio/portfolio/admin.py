@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo, ContactMethod
 
 
@@ -37,9 +38,29 @@ class EducationAdmin(admin.ModelAdmin):
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'status', 'created_at')
+    list_display = ('title', 'author', 'source', 'status', 'created_at', 'image_preview')
     prepopulated_fields = {'slug': ('title',)}
-    list_filter = ('status', 'created_at')
+    list_filter = ('status', 'source', 'author', 'created_at')
+    search_fields = ('title', 'content', 'author', 'source')
+    readonly_fields = ('image_preview', 'created_at')
+    fieldsets = (
+        ('Article Content', {
+            'fields': ('title', 'slug', 'author', 'source', 'summary', 'content', 'status')
+        }),
+        ('Media / Image', {
+            'fields': ('image', 'image_url', 'image_preview')
+        }),
+        ('Metadata', {
+            'fields': ('created_at',)
+        }),
+    )
+
+    def image_preview(self, obj):
+        img_src = obj.get_image_url
+        if img_src:
+            return format_html('<img src="{}" width="100" style="border-radius:8px;" />', img_src)
+        return "No image"
+    image_preview.short_description = "Image Preview"
 
 @admin.register(Visitor)
 class VisitorAdmin(admin.ModelAdmin):

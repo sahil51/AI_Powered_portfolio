@@ -124,6 +124,7 @@ class BlogPost(Base):
     slug = Column(String(200))
     summary = Column(Text)
     content = Column(Text)
+    image = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=utcnow)
     status = Column(String(10), default='Published')
 

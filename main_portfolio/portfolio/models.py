@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 class TypedRole(models.Model):
     name = models.CharField(max_length=100)
@@ -99,21 +100,52 @@ class Education(models.Model):
     def __str__(self):
         return f"{self.degree} at {self.institution}"
 
+import re
+
 class BlogPost(models.Model):
     STATUS_CHOICES = (
         ('Draft', 'Draft'),
         ('Published', 'Published'),
     )
     title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, unique=True)
-    summary = models.TextField()
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    summary = models.TextField(blank=True, null=True)
     content = models.TextField()
+    image = models.ImageField(upload_to='blog_images/', blank=True, null=True)
+    image_url = models.URLField(max_length=500, blank=True, null=True)
+    author = models.CharField(max_length=100, blank=True, null=True)
+    source = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Published')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, blank=True, null=True)
 
     class Meta:
         verbose_name = "Blog Article"
         verbose_name_plural = "Blog Articles"
+
+    @property
+    def get_image_url(self):
+        if self.image:
+            return self.image.url
+        if self.image_url:
+            return self.image_url
+        return None
+
+    def save(self, *args, **kwargs):
+        if self.status:
+            formatted_status = str(self.status).strip().capitalize()
+            if formatted_status in ['Draft', 'Published']:
+                self.status = formatted_status
+        if not self.summary and self.content:
+            clean_text = re.sub('<[^<]+?>', '', self.content)
+            self.summary = clean_text[:180] + '...' if len(clean_text) > 180 else clean_text
+        if not self.slug:
+            base_slug = slugify(self.title) or 'blog-post'
+            self.slug = base_slug
+            counter = 1
+            while BlogPost.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{base_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
