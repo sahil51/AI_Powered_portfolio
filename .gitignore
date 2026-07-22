@@ -8,6 +8,7 @@ build/
 .venv/
 venv/
 .env/
+myvenv/
 
 # IDE
 .vscode/
