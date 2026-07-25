@@ -25,23 +25,35 @@
     {% if blogs %}
         {% for blog in blogs %}
         <div class="skill-card reveal visible" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 280px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04); transition: all 0.3s ease; overflow: hidden;">
-          {% if blog.get_image_url %}
-          <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="display: block; overflow: hidden; max-height: 200px;">
-            <img src="{{ blog.get_image_url }}" alt="{{ blog.title }}" style="width: 100%; height: 180px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          {% if blog.get_card_image_url %}
+          <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="display: block; overflow: hidden; max-height: 200px; position: relative;">
+            <img src="{{ blog.get_card_image_url }}" alt="{{ blog.title }}" style="width: 100%; height: 180px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            {% if blog.category %}
+            <span style="position: absolute; top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); color: #38BDF8; font-weight: 700; font-size: 11px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; border: 1px solid rgba(56, 189, 248, 0.3);">
+              {{ blog.category }}
+            </span>
+            {% endif %}
           </a>
           {% endif %}
-          <div style="padding: 28px;">
+          <div style="padding: 24px;">
             <div>
-              <div class="skill-card-header" style="margin-bottom: 16px; display: flex; align-items: center; gap: 14px;">
-                <div class="skill-card-icon" style="width: 44px; height: 44px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08)); color: var(--cyan); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              {% if not blog.get_card_image_url and blog.category %}
+              <div style="margin-bottom: 12px;">
+                <span style="background: rgba(37, 99, 235, 0.08); color: var(--cyan); font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ blog.category }}
+                </span>
+              </div>
+              {% endif %}
+              <div class="skill-card-header" style="margin-bottom: 14px; display: flex; align-items: center; gap: 14px;">
+                <div class="skill-card-icon" style="width: 42px; height: 42px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08)); color: var(--cyan); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                   <i class="fa-solid fa-newspaper"></i>
                 </div>
                 <div class="skill-card-title" style="font-size: 16px; font-weight: 700; color: #0F172A; line-height: 1.4; text-transform: none; letter-spacing: normal;">
                   {{ blog.title }}
                 </div>
               </div>
-              <p style="color: #475569; font-size: 14.5px; line-height: 1.6; margin-bottom: 20px;">
-                {{ blog.summary|truncatewords:30 }}
+              <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+                {{ blog.summary|truncatewords:26 }}
               </p>
             </div>
             <div>

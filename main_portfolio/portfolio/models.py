@@ -113,6 +113,9 @@ class BlogPost(models.Model):
     content = models.TextField()
     image = models.ImageField(upload_to='blog_images/', blank=True, null=True)
     image_url = models.URLField(max_length=500, blank=True, null=True)
+    image_2 = models.URLField(max_length=500, blank=True, null=True, help_text="Card thumbnail image URL")
+    card_image = models.ImageField(upload_to='blog_images/cards/', blank=True, null=True, help_text="Card thumbnail image file")
+    category = models.CharField(max_length=100, blank=True, null=True, default='Technology')
     author = models.CharField(max_length=100, blank=True, null=True)
     source = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -123,12 +126,34 @@ class BlogPost(models.Model):
         verbose_name_plural = "Blog Articles"
 
     @property
-    def get_image_url(self):
+    def get_card_image_url(self):
+        """Returns card thumbnail image file or URL, with fallback to detail image if missing."""
+        if self.card_image:
+            return self.card_image.url
+        if self.image_2:
+            return self.image_2
         if self.image:
             return self.image.url
         if self.image_url:
             return self.image_url
         return None
+
+    @property
+    def get_detail_image_url(self):
+        """Returns detail page main image file or URL, with fallback to card image if missing."""
+        if self.image:
+            return self.image.url
+        if self.image_url:
+            return self.image_url
+        if self.card_image:
+            return self.card_image.url
+        if self.image_2:
+            return self.image_2
+        return None
+
+    @property
+    def get_image_url(self):
+        return self.get_detail_image_url
 
     def save(self, *args, **kwargs):
         if self.status:

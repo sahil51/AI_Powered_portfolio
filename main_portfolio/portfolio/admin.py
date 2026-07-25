@@ -38,16 +38,19 @@ class EducationAdmin(admin.ModelAdmin):
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'source', 'status', 'created_at', 'image_preview')
+    list_display = ('title', 'category', 'author', 'source', 'status', 'created_at', 'card_preview', 'image_preview')
     prepopulated_fields = {'slug': ('title',)}
-    list_filter = ('status', 'source', 'author', 'created_at')
-    search_fields = ('title', 'content', 'author', 'source')
-    readonly_fields = ('image_preview', 'created_at')
+    list_filter = ('status', 'category', 'source', 'author', 'created_at')
+    search_fields = ('title', 'content', 'author', 'source', 'category')
+    readonly_fields = ('card_preview', 'image_preview', 'created_at')
     fieldsets = (
         ('Article Content', {
-            'fields': ('title', 'slug', 'author', 'source', 'summary', 'content', 'status')
+            'fields': ('title', 'slug', 'category', 'author', 'source', 'summary', 'content', 'status')
         }),
-        ('Media / Image', {
+        ('Card Preview Image (Blog Cards)', {
+            'fields': ('card_image', 'image_2', 'card_preview')
+        }),
+        ('Main Detail Image (Blog Page)', {
             'fields': ('image', 'image_url', 'image_preview')
         }),
         ('Metadata', {
@@ -55,12 +58,28 @@ class BlogPostAdmin(admin.ModelAdmin):
         }),
     )
 
+    class Media:
+        css = {
+            'all': ('portfolio/css/admin_ckeditor.css',)
+        }
+        js = (
+            'https://cdn.ckeditor.com/ckeditor5/39.0.1/super-build/ckeditor.js',
+            'portfolio/js/admin_ckeditor.js',
+        )
+
+    def card_preview(self, obj):
+        img_src = obj.get_card_image_url
+        if img_src:
+            return format_html('<img src="{}" width="100" style="border-radius:8px; object-fit:cover; height:60px;" />', img_src)
+        return "No card image"
+    card_preview.short_description = "Card Preview"
+
     def image_preview(self, obj):
         img_src = obj.get_image_url
         if img_src:
-            return format_html('<img src="{}" width="100" style="border-radius:8px;" />', img_src)
-        return "No image"
-    image_preview.short_description = "Image Preview"
+            return format_html('<img src="{}" width="100" style="border-radius:8px; object-fit:cover; height:60px;" />', img_src)
+        return "No main image"
+    image_preview.short_description = "Main Image Preview"
 
 @admin.register(Visitor)
 class VisitorAdmin(admin.ModelAdmin):

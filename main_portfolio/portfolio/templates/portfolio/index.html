@@ -292,9 +292,9 @@
         <div class="blog-card reveal" style="background: #FFFFFF; border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 20px 35px -8px rgba(37, 99, 235, 0.14)'; this.style.borderColor='rgba(37, 99, 235, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px -2px rgba(15, 23, 42, 0.04)'; this.style.borderColor='var(--border)';">
           
           <!-- Image Banner -->
-          {% if blog.get_image_url %}
+          {% if blog.get_card_image_url %}
           <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="display: block; overflow: hidden; height: 180px; position: relative;">
-            <img src="{{ blog.get_image_url }}" alt="{{ blog.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
+            <img src="{{ blog.get_card_image_url }}" alt="{{ blog.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
             <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(15, 23, 42, 0.35) 100%); pointer-events: none;"></div>
             {% if blog.source %}
             <span style="position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); color: #38BDF8; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-transform: uppercase; letter-spacing: 0.5px;">

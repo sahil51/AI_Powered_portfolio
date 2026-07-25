@@ -1,0 +1,97 @@
+/* CKEditor 5 Dark Theme matching Jazzmin Admin UI */
+.ck.ck-editor__main > .ck-editor__editable {
+    background-color: #2b3035 !important;
+    color: #e1e3e6 !important;
+    border-color: #495057 !important;
+    min-height: 240px;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.ck.ck-editor__main > .ck-editor__editable:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Toolbar Styling */
+.ck.ck-toolbar {
+    background-color: #212529 !important;
+    border-color: #495057 !important;
+    border-top-left-radius: 6px !important;
+    border-top-right-radius: 6px !important;
+}
+
+.ck.ck-toolbar .ck-toolbar__separator {
+    background-color: #495057 !important;
+}
+
+.ck.ck-toolbar .ck-button, 
+.ck.ck-toolbar .ck-dropdown__button {
+    color: #e1e3e6 !important;
+    border-radius: 4px;
+}
+
+.ck.ck-toolbar .ck-button:hover, 
+.ck.ck-toolbar .ck-button.ck-on,
+.ck.ck-dropdown__button:hover {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+}
+
+.ck.ck-toolbar .ck-icon {
+    color: #e1e3e6 !important;
+}
+
+.ck.ck-toolbar .ck-button.ck-on .ck-icon {
+    color: #0d6efd !important;
+}
+
+/* Dropdowns & Popups */
+.ck.ck-dropdown__panel {
+    background-color: #212529 !important;
+    border-color: #495057 !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+.ck.ck-list__item .ck-button {
+    color: #e1e3e6 !important;
+}
+
+.ck.ck-list__item .ck-button:hover,
+.ck.ck-list__item .ck-button.ck-on {
+    background-color: #343a40 !important;
+    color: #0d6efd !important;
+}
+
+/* Inputs inside Balloon panels */
+.ck.ck-input {
+    background-color: #1a1d21 !important;
+    color: #e1e3e6 !important;
+    border-color: #495057 !important;
+}
+
+.ck.ck-balloon-panel {
+    background-color: #212529 !important;
+    border-color: #495057 !important;
+    color: #e1e3e6 !important;
+}
+
+.ck.ck-labeled-field-view__status {
+    color: #a0a5aa !important;
+}
+
+/* Code block dark styling inside editor */
+.ck-content code {
+    background-color: #191c1f !important;
+    color: #00f2fe !important;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.ck-content pre {
+    background-color: #191c1f !important;
+    color: #e1e3e6 !important;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #373b3e;
+}
