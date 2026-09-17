@@ -71,7 +71,8 @@ class Project(models.Model):
     description = models.TextField()
     icon_class = models.CharField(max_length=100, default='fa-solid fa-rocket')
     technologies = models.CharField(max_length=255, help_text="Comma-separated list of technologies")
-    link = models.URLField(blank=True, null=True)
+    link = models.URLField(blank=True, null=True, help_text="External URL or Github link (optional fallback if no blog article is linked)")
+    blog_post = models.ForeignKey('BlogPost', on_delete=models.SET_NULL, blank=True, null=True, related_name='linked_projects', verbose_name="Linked Blog Article / Case Study", help_text="Select a Blog Article to explain this project in detail")
 
     class Meta:
         verbose_name = "Featured Project"
@@ -79,6 +80,12 @@ class Project(models.Model):
 
     def get_technologies_list(self):
         return [tag.strip() for tag in self.technologies.split(',') if tag.strip()]
+
+    def get_project_url(self):
+        if self.blog_post and self.blog_post.slug:
+            from django.urls import reverse
+            return reverse('portfolio:blog_detail', kwargs={'slug': self.blog_post.slug})
+        return self.link or '#'
 
     def __str__(self):
         return f"Project {self.number}: {self.title}"
@@ -155,6 +162,21 @@ class BlogPost(models.Model):
     def get_image_url(self):
         return self.get_detail_image_url
 
+    @property
+    def read_time(self):
+        """Calculates estimated read time in minutes."""
+        text = re.sub(r'<[^>]+>', '', self.content or '')
+        words = len(re.findall(r'\w+', text))
+        return max(1, round(words / 200))
+
+    @property
+    def clean_summary(self):
+        """Strips HTML tags and converts &nbsp; / entities into clean plain text for card previews."""
+        import html
+        text = re.sub(r'<[^>]+>', ' ', self.summary or self.content or '')
+        clean = html.unescape(text)
+        return ' '.join(clean.split())
+
     def save(self, *args, **kwargs):
         if self.status:
             formatted_status = str(self.status).strip().capitalize()
@@ -206,6 +228,8 @@ class ContactMessage(models.Model):
 
 class HeroInfo(models.Model):
     name = models.CharField(max_length=150, default="Sahil Thakur")
+    brand_name = models.CharField(max_length=100, blank=True, null=True, help_text="Brand text displayed in top navbar (optional)")
+    logo_image = models.ImageField(upload_to='logo/', blank=True, null=True, help_text="Upload custom logo image for navbar")
     location = models.CharField(max_length=200, default="Ambala City, Haryana, India")
     current_company = models.CharField(max_length=200, default="Crescaler R&D")
     short_intro = models.TextField(default="Backend & AI Engineer skilled in Python, Django, FastAPI, PostgreSQL, Redis, Docker, and Agentic AI.")

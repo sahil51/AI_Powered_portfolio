@@ -11,15 +11,22 @@ class EmbeddingClient:
 
     async def embed_text(self, text: str) -> list[float]:
         loop = asyncio.get_event_loop()
-        async with self._lock:
-            result = await loop.run_in_executor(
-                None,
-                lambda: self.client.models.embed_content(
-                    model=self.model_name,
-                    contents=text,
-                )
-            )
-        return result.embeddings[0].values
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                async with self._lock:
+                    result = await loop.run_in_executor(
+                        None,
+                        lambda: self.client.models.embed_content(
+                            model=self.model_name,
+                            contents=text,
+                        )
+                    )
+                return result.embeddings[0].values
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                await asyncio.sleep(1.0 * (attempt + 1))
 
     async def embed_query(self, query: str) -> list[float]:
         return await self.embed_text(query)

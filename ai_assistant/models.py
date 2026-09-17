@@ -97,6 +97,9 @@ class Project(Base):
     icon_class = Column(String(100), default='fa-solid fa-rocket')
     technologies = Column(String(255))
     link = Column(String(500), nullable=True)
+    blog_post_id = Column(Integer, ForeignKey('portfolio_blogpost.id'), nullable=True)
+
+    blog_post = relationship('BlogPost', lazy='selectin')
 
     def get_technologies_list(self):
         return [t.strip() for t in (self.technologies or '').split(',') if t.strip()]

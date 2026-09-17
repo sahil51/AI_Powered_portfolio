@@ -35,12 +35,18 @@ async def load_all_documents(session: AsyncSession) -> list[dict]:
         parts.append(f"LinkedIn: {hero.linkedin_url}")
         parts.append(f"GitHub: {hero.github_url}")
 
+        if hero.resume:
+            r_str = str(hero.resume).strip()
+            if r_str:
+                resume_url = r_str if (r_str.startswith('/') or r_str.startswith('http')) else f"/media/{r_str}"
+                parts.append(f"Resume PDF Direct Download Link: {resume_url}")
+
         docs.append({
             "id": "hero",
             "type": "profile",
             "title": f"About {hero.name}",
             "content": "\n".join(parts),
-            "keywords": f"{hero.name} profile about intro role stack",
+            "keywords": f"{hero.name} profile about intro role stack resume cv download pdf link",
             "source": "hero_info",
         })
 
@@ -108,13 +114,15 @@ async def load_all_documents(session: AsyncSession) -> list[dict]:
             parts.append(f"Technologies: {proj.technologies}")
         if proj.link:
             parts.append(f"Link: {proj.link}")
+        if proj.blog_post:
+            parts.append(f"In-depth Technical Case Study / Blog Article: '{proj.blog_post.title}' (URL: /blog/{proj.blog_post.slug}/)")
 
         docs.append({
             "id": f"proj_{proj.id}",
             "type": "project",
             "title": proj.title,
             "content": "\n".join(parts),
-            "keywords": f"{proj.title} project {proj.technologies}",
+            "keywords": f"{proj.title} project {proj.technologies} case study detailed blog breakdown",
             "source": "project",
         })
 
@@ -157,19 +165,24 @@ async def load_all_documents(session: AsyncSession) -> list[dict]:
                 "source": "skill_category",
             })
 
-    # Blog posts
+    # Blog posts (In-depth Technical Case Studies & Project Deep Dives)
     blog_result = await session.execute(
         select(BlogPost).where(BlogPost.status == 'Published').order_by(BlogPost.created_at.desc())
     )
     blogs = blog_result.scalars().all()
+    import html, re
     for blog in blogs:
-        content_preview = blog.content[:1500] if len(blog.content) > 1500 else blog.content
+        raw_text = re.sub(r'<[^>]+>', ' ', blog.content or '')
+        clean_content = html.unescape(' '.join(raw_text.split()))
+        content_full = clean_content[:3000] if len(clean_content) > 3000 else clean_content
+        summary_clean = html.unescape(' '.join(re.sub(r'<[^>]+>', ' ', blog.summary or '').split()))
+
         docs.append({
             "id": f"blog_{blog.id}",
             "type": "blog",
             "title": blog.title,
-            "content": f"Title: {blog.title}\nSummary: {blog.summary}\nContent: {content_preview}",
-            "keywords": f"{blog.title} {blog.summary} blog article",
+            "content": f"Article Title: {blog.title}\nArticle URL: /blog/{blog.slug}/\nSummary: {summary_clean}\nDetailed Article Content & Explanation:\n{content_full}",
+            "keywords": f"{blog.title} {summary_clean} blog article case study technical deep dive project detail",
             "source": "blog_post",
         })
 

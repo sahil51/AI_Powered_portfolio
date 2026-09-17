@@ -29,7 +29,9 @@ class ExperienceAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('number', 'title', 'link')
+    list_display = ('number', 'title', 'blog_post', 'link')
+    list_filter = ('blog_post',)
+    search_fields = ('title', 'description', 'technologies')
     ordering = ('number',)
 
 @admin.register(Education)
@@ -93,8 +95,12 @@ class ContactMessageAdmin(admin.ModelAdmin):
 
 @admin.register(HeroInfo)
 class HeroInfoAdmin(admin.ModelAdmin):
-    list_display = ('name', 'role', 'terminal_title', 'class_name', 'current_company', 'open_to_work')
+    list_display = ('brand_name', 'name', 'role', 'terminal_title', 'class_name', 'current_company', 'open_to_work')
     fieldsets = (
+        ('Navbar Logo & Branding', {
+            'fields': ('brand_name', 'logo_image'),
+            'description': 'Upload your custom logo image and change the navbar brand text (e.g. Sahil.dev).'
+        }),
         ('Basic Profile Info', {
             'fields': ('name', 'role', 'location', 'short_intro', 'about_me', 'email', 'phone', 'contact_description')
         }),

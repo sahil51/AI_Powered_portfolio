@@ -2,35 +2,485 @@
 {% load static %}
 
 {% block title %}{{ blog.title }} | Sahil Thakur Blog{% endblock %}
-{% block description %}{{ blog.summary }}{% endblock %}
+{% block description %}{{ blog.summary|striptags }}{% endblock %}
 
 {% block extra_css %}
 <style>
-  .blog-post-wrapper {
+  /* Base Layout Containment */
+  .blog-detail-section {
+    padding: 110px 0 80px;
+    background: var(--bg);
+    min-height: 85vh;
+  }
+
+  .blog-detail-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 4vw;
+    box-sizing: border-box;
+  }
+
+  /* Breadcrumb Navigation */
+  .blog-breadcrumb-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .blog-breadcrumb-bar a {
+    color: #64748B;
+    text-decoration: none;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .blog-breadcrumb-bar a:hover {
+    color: var(--cyan);
+  }
+
+  .blog-breadcrumb-bar .sep {
+    color: #CBD5E1;
+  }
+
+  /* 2-Column Main Grid */
+  .blog-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 36px;
+    align-items: start;
+  }
+
+  /* Left Main Card Wrapper */
+  .blog-main-card {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 20px;
-    padding: 48px 56px;
-    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    border-radius: 24px;
+    padding: 44px 48px;
+    box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.05);
+    display: flow-root;
+    overflow: hidden;
+    box-sizing: border-box;
   }
+
+  /* Header elements inside card */
+  .blog-category-badge {
+    display: inline-block;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--cyan);
+    font-weight: 800;
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 16px;
+  }
+
+  .blog-main-title {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.25;
+    margin-bottom: 18px;
+    letter-spacing: -0.8px;
+  }
+
+  .blog-subtitle-summary {
+    font-size: 17.5px;
+    line-height: 1.65;
+    color: #475569;
+    margin-bottom: 28px;
+    font-weight: 450;
+  }
+
+  /* Author & Share Bar */
+  .blog-meta-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .blog-author-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .author-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), #7C3AED);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    font-family: 'Space Grotesk', sans-serif;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    flex-shrink: 0;
+  }
+
+  .author-details-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .author-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+
+  .article-submeta {
+    font-size: 12.5px;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .share-action-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .share-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .share-icon-btn:hover {
+    background: #F8FAFC;
+    color: var(--cyan);
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  /* Hero Image Banner */
+  .blog-hero-banner {
+    margin-bottom: 36px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  }
+
+  .blog-hero-banner img {
+    width: 100%;
+    max-height: 440px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* =============================================
+     CKEditor Content Formatting Styling 
+     (Applied to both main content & summary)
+     ============================================= */
+  .blog-post-content,
+  .blog-subtitle-summary {
+    display: flow-root;
+    clear: both;
+    box-sizing: border-box;
+  }
+
   .blog-post-content {
     line-height: 1.85;
     color: #334155;
-    font-size: 17px;
+    font-size: 17.5px;
     font-family: 'Inter', sans-serif;
   }
-  .blog-post-content h2, .blog-post-content h3 {
+
+  .blog-subtitle-summary {
+    font-size: 17.5px;
+    line-height: 1.65;
+    color: #475569;
+    margin-bottom: 28px;
+    font-weight: 450;
+  }
+
+  /* Text alignments from CKEditor 5 */
+  .blog-post-content .text-align-left,
+  .blog-subtitle-summary .text-align-left,
+  .blog-post-content [style*="text-align:left"],
+  .blog-subtitle-summary [style*="text-align:left"],
+  .blog-post-content [style*="text-align: left"],
+  .blog-subtitle-summary [style*="text-align: left"] {
+    text-align: left !important;
+  }
+
+  .blog-post-content .text-align-center,
+  .blog-subtitle-summary .text-align-center,
+  .blog-post-content [style*="text-align:center"],
+  .blog-subtitle-summary [style*="text-align:center"],
+  .blog-post-content [style*="text-align: center"],
+  .blog-subtitle-summary [style*="text-align: center"] {
+    text-align: center !important;
+  }
+
+  .blog-post-content .text-align-right,
+  .blog-subtitle-summary .text-align-right,
+  .blog-post-content [style*="text-align:right"],
+  .blog-subtitle-summary [style*="text-align:right"],
+  .blog-post-content [style*="text-align: right"],
+  .blog-subtitle-summary [style*="text-align: right"] {
+    text-align: right !important;
+  }
+
+  .blog-post-content .text-align-justify,
+  .blog-subtitle-summary .text-align-justify,
+  .blog-post-content [style*="text-align:justify"],
+  .blog-subtitle-summary [style*="text-align:justify"],
+  .blog-post-content [style*="text-align: justify"],
+  .blog-subtitle-summary [style*="text-align: justify"] {
+    text-align: justify !important;
+  }
+
+  /* Font size classes from CKEditor */
+  .blog-post-content .text-tiny, .blog-subtitle-summary .text-tiny { font-size: 0.75em; }
+  .blog-post-content .text-small, .blog-subtitle-summary .text-small { font-size: 0.85em; }
+  .blog-post-content .text-big, .blog-subtitle-summary .text-big { font-size: 1.3em; }
+  .blog-post-content .text-huge, .blog-subtitle-summary .text-huge { font-size: 1.7em; }
+
+  /* Headings */
+  .blog-post-content h1, .blog-subtitle-summary h1,
+  .blog-post-content h2, .blog-subtitle-summary h2,
+  .blog-post-content h3, .blog-subtitle-summary h3,
+  .blog-post-content h4, .blog-subtitle-summary h4,
+  .blog-post-content h5, .blog-subtitle-summary h5,
+  .blog-post-content h6, .blog-subtitle-summary h6 {
     color: #0F172A;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
-    margin-top: 36px;
+    margin-top: 32px;
     margin-bottom: 16px;
     letter-spacing: -0.5px;
+    scroll-margin-top: 100px;
   }
-  .blog-post-content p {
-    margin-bottom: 24px;
+
+  .blog-post-content p, .blog-subtitle-summary p {
+    margin-bottom: 20px;
   }
-  .blog-post-content pre {
+
+  /* Inline Text Formatting */
+  .blog-post-content strong, .blog-subtitle-summary strong,
+  .blog-post-content b, .blog-subtitle-summary b {
+    font-weight: 700;
+    color: #0F172A;
+  }
+
+  .blog-post-content em, .blog-subtitle-summary em,
+  .blog-post-content i, .blog-subtitle-summary i {
+    font-style: italic;
+  }
+
+  .blog-post-content u, .blog-subtitle-summary u {
+    text-decoration: underline;
+  }
+
+  .blog-post-content s, .blog-subtitle-summary s,
+  .blog-post-content strike, .blog-subtitle-summary strike,
+  .blog-post-content del, .blog-subtitle-summary del {
+    text-decoration: line-through;
+  }
+
+  .blog-post-content sub, .blog-subtitle-summary sub { vertical-align: sub; font-size: 0.75em; }
+  .blog-post-content sup, .blog-subtitle-summary sup { vertical-align: super; font-size: 0.75em; }
+
+  /* CKEditor Images & Media (Figure and Direct IMG support) */
+  .blog-post-content img,
+  .blog-subtitle-summary img {
+    max-width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    border-radius: 12px;
+  }
+
+  .blog-post-content figure,
+  .blog-subtitle-summary figure {
+    margin: 24px 0;
+    display: block;
+    clear: both;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .blog-post-content figure img,
+  .blog-subtitle-summary figure img {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 14px;
+    display: block;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  .blog-post-content figure figcaption,
+  .blog-subtitle-summary figure figcaption {
+    font-size: 13.5px;
+    color: #64748B;
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* Resized figures & images (CKEditor sets inline style="width: XX%;" on figure or img) */
+  .blog-post-content figure.image_resized,
+  .blog-subtitle-summary figure.image_resized,
+  .blog-post-content img.image_resized,
+  .blog-subtitle-summary img.image_resized {
+    box-sizing: border-box;
+    max-width: 100% !important;
+  }
+
+  .blog-post-content figure.image_resized img,
+  .blog-subtitle-summary figure.image_resized img {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Alignment Classes from CKEditor 5 */
+  .blog-post-content figure.image-style-align-center,
+  .blog-subtitle-summary figure.image-style-align-center,
+  .blog-post-content figure.image-style-block-align-center,
+  .blog-subtitle-summary figure.image-style-block-align-center,
+  .blog-post-content .image-style-block,
+  .blog-subtitle-summary .image-style-block {
+    display: block;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    clear: both;
+  }
+
+  .blog-post-content figure.image-style-align-left,
+  .blog-subtitle-summary figure.image-style-align-left,
+  .blog-post-content figure.image-style-block-align-left,
+  .blog-subtitle-summary figure.image-style-block-align-left,
+  .blog-post-content img.image-style-align-left,
+  .blog-subtitle-summary img.image-style-align-left {
+    float: left !important;
+    margin-right: 24px !important;
+    margin-bottom: 16px !important;
+    margin-left: 0 !important;
+    clear: left;
+  }
+
+  .blog-post-content figure.image-style-align-right,
+  .blog-subtitle-summary figure.image-style-align-right,
+  .blog-post-content figure.image-style-block-align-right,
+  .blog-subtitle-summary figure.image-style-block-align-right,
+  .blog-post-content figure.image-style-side,
+  .blog-subtitle-summary figure.image-style-side,
+  .blog-post-content img.image-style-align-right,
+  .blog-subtitle-summary img.image-style-align-right {
+    float: right !important;
+    margin-left: 24px !important;
+    margin-bottom: 16px !important;
+    margin-right: 0 !important;
+    clear: right;
+  }
+
+  /* Resized + aligned combination */
+  .blog-post-content figure.image_resized.image-style-align-left,
+  .blog-subtitle-summary figure.image_resized.image-style-align-left {
+    margin-left: 0 !important;
+    margin-right: 24px !important;
+  }
+
+  .blog-post-content figure.image_resized.image-style-align-right,
+  .blog-subtitle-summary figure.image_resized.image-style-align-right,
+  .blog-post-content figure.image_resized.image-style-side,
+  .blog-subtitle-summary figure.image_resized.image-style-side {
+    margin-right: 0 !important;
+    margin-left: 24px !important;
+  }
+
+  /* Clear float after content */
+  .blog-post-content::after,
+  .blog-subtitle-summary::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  /* Lists */
+  .blog-post-content ul, .blog-subtitle-summary ul {
+    list-style-type: disc !important;
+    margin: 16px 0 24px 28px !important;
+    padding: 0 !important;
+  }
+
+  .blog-post-content ol, .blog-subtitle-summary ol {
+    list-style-type: decimal !important;
+    margin: 16px 0 24px 28px !important;
+    padding: 0 !important;
+  }
+
+  .blog-post-content li, .blog-subtitle-summary li {
+    margin-bottom: 8px !important;
+    line-height: 1.7;
+  }
+
+  /* Blockquotes */
+  .blog-post-content blockquote, .blog-subtitle-summary blockquote {
+    border-left: 4px solid var(--cyan);
+    background: #F8FAFC;
+    padding: 20px 24px;
+    margin: 28px 0;
+    border-radius: 0 14px 14px 0;
+    font-style: italic;
+    color: #475569;
+    font-size: 18px;
+  }
+
+  /* Tables */
+  .blog-post-content table, .blog-subtitle-summary table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 28px 0;
+    overflow-x: auto;
+    display: table;
+  }
+
+  .blog-post-content table th, .blog-subtitle-summary table th,
+  .blog-post-content table td, .blog-subtitle-summary table td {
+    border: 1px solid #CBD5E1;
+    padding: 12px 18px;
+    text-align: left;
+  }
+
+  .blog-post-content table th, .blog-subtitle-summary table th {
+    background: #F1F5F9;
+    color: #0F172A;
+    font-weight: 700;
+  }
+
+  /* Code Blocks */
+  .blog-post-content pre, .blog-subtitle-summary pre {
     background: #0F172A;
     color: #F8FAFC;
     padding: 24px;
@@ -39,14 +489,134 @@
     border: 1px solid #1E293B;
     margin: 28px 0;
   }
-  .blog-post-content code {
+
+  .blog-post-content code, .blog-subtitle-summary code {
     font-family: 'JetBrains Mono', monospace;
     font-size: 14.5px;
     color: #38BDF8;
   }
+
+  /* Sidebar Styling */
+  .blog-sidebar-column {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    position: sticky;
+    top: 96px;
+  }
+
+  .sidebar-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    padding: 24px 24px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+  }
+
+  .sidebar-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toc-list-container {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toc-list-container li a {
+    font-size: 14px;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: block;
+    line-height: 1.4;
+  }
+
+  .toc-list-container li a:hover {
+    color: var(--cyan);
+    font-weight: 600;
+    transform: translateX(4px);
+  }
+
+  .toc-list-container li.toc-h3 {
+    padding-left: 14px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 1024px) {
+    .blog-main-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-sidebar-column {
+      position: static;
+    }
+  }
+
   @media (max-width: 768px) {
-    .blog-post-wrapper {
-      padding: 28px 24px;
+    .blog-detail-section {
+      padding: 95px 0 60px;
+    }
+
+    .blog-main-card {
+      padding: 24px 18px;
+      border-radius: 18px;
+    }
+
+    .blog-main-title {
+      font-size: clamp(24px, 6.5vw, 32px);
+      margin-bottom: 14px;
+    }
+
+    .blog-subtitle-summary {
+      font-size: 15.5px;
+    }
+
+    .blog-post-content {
+      font-size: 15.5px;
+      line-height: 1.75;
+    }
+
+    .blog-post-content pre,
+    .blog-post-content code {
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      word-break: break-word;
+    }
+
+    .blog-post-content table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .blog-meta-action-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .blog-hero-banner img {
+      max-height: 260px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .blog-main-card {
+      padding: 18px 14px;
     }
   }
 </style>
@@ -54,73 +624,249 @@
 
 {% block content %}
 <main>
-    
-<section style="padding: 120px 6vw 80px; min-height: 85vh; background: var(--bg);">
-  <div style="max-width: 860px; margin: 0 auto;">
-    
-    <!-- Navigation Breadcrumb -->
-    <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan); margin-bottom: 24px; font-weight: 600;">
-      <a href="{% url 'portfolio:blog_list' %}" style="color: var(--cyan); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Back to All Articles</a>
-    </div>
 
-    <!-- Article Container -->
-    <div class="blog-post-wrapper reveal visible">
-      
-      <!-- Metadata Row -->
-      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
-        <span style="background: rgba(37, 99, 235, 0.08); color: var(--cyan); font-weight: 700; font-size: 12px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;">
-          {{ blog.category|default:"Engineering Article" }}
-        </span>
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748B;">
-          <i class="fa-regular fa-calendar" style="margin-right: 4px;"></i> {{ blog.created_at|date:"F d, Y" }}
-        </span>
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748B;">
-          <i class="fa-regular fa-user" style="margin-right: 4px;"></i> {{ blog.author|default:"Sahil Thakur" }}
-        </span>
-        {% if blog.source %}
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748B;">
-          <i class="fa-solid fa-share-nodes" style="margin-right: 4px;"></i> via {{ blog.source|title }}
-        </span>
+  <section class="blog-detail-section">
+
+    <div class="blog-detail-container">
+
+      <!-- 1. Breadcrumb Bar -->
+      <div class="blog-breadcrumb-bar">
+        <a href="{% url 'portfolio:home' %}"><i class="fa-solid fa-house" style="font-size: 11px;"></i> Home</a>
+        <span class="sep">/</span>
+        <a href="{% url 'portfolio:blog_list' %}">Blogs</a>
+        {% if blog.category %}
+        <span class="sep">/</span>
+        <span style="color: var(--cyan); font-weight: 600;">{{ blog.category }}</span>
         {% endif %}
-      </div>
-      
-      <!-- Article Title -->
-      <h1 style="font-size: clamp(28px, 4.5vw, 42px); font-weight: 800; color: #0F172A; line-height: 1.25; margin-bottom: 24px; letter-spacing: -0.8px;">
-        {{ blog.title }}
-      </h1>
-
-      <!-- Featured Image -->
-      {% if blog.get_detail_image_url %}
-      <div style="margin-bottom: 36px; border-radius: 16px; overflow: hidden;">
-        <img src="{{ blog.get_detail_image_url }}" alt="{{ blog.title }}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 16px; display: block;">
-      </div>
-      {% endif %}
-
-      <!-- Summary Subtitle -->
-      <div style="font-size: 18px; line-height: 1.6; color: #475569; border-left: 3px solid var(--cyan); padding-left: 18px; margin-bottom: 36px; font-weight: 500;">
-        {{ blog.summary }}
-      </div>
-      
-      <hr style="border: none; border-top: 1px solid #E2E8F0; margin-bottom: 36px;">
-
-      <!-- Article Main Content -->
-      <div class="blog-post-content">
-        {{ blog.content|safe }}
+        <span class="sep">/</span>
+        <span style="color: #0F172A; font-weight: 600;">{{ blog.title|truncatewords:5 }}</span>
       </div>
 
-      <!-- Bottom Back Button -->
-      <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <a href="{% url 'portfolio:blog_list' %}" class="btn btn-ghost" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
-          ← Explore All Articles
-        </a>
-        <a href="{% url 'portfolio:home' %}#contact" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
-          Get in Touch with Sahil
-        </a>
+      <!-- 2. Main 2-Column Grid -->
+      <div class="blog-main-grid">
+
+        <!-- LEFT COLUMN: Main Article Card -->
+        <div class="blog-main-card reveal visible">
+
+          <!-- Category Badge -->
+          {% if blog.category %}
+          <span class="blog-category-badge">
+            {{ blog.category }}
+          </span>
+          {% endif %}
+
+          <!-- Title -->
+          <h1 class="blog-main-title">
+            {{ blog.title }}
+          </h1>
+
+          <!-- Subtitle Summary -->
+          {% if blog.summary %}
+          <div class="blog-subtitle-summary">
+            {{ blog.summary|safe }}
+          </div>
+          {% endif %}
+
+          <!-- Author & Share Action Bar -->
+          <div class="blog-meta-action-bar">
+            <div class="blog-author-info">
+              <div class="author-avatar-circle">
+                ST
+              </div>
+              <div class="author-details-text">
+                <span class="author-name">{{ blog.author|default:"Sahil Thakur" }}</span>
+                <div class="article-submeta">
+                  <span><i class="fa-regular fa-calendar"></i> {{ blog.created_at|date:"M d, Y" }}</span>
+                  <span>•</span>
+                  <span><i class="fa-regular fa-clock"></i> {{ blog.read_time }} min read</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Share Buttons (Copy Link, LinkedIn, WhatsApp) -->
+            <div class="share-action-group">
+              <button class="share-icon-btn"
+                onclick="navigator.clipboard.writeText(window.location.href); alert('Article link copied to clipboard!');"
+                title="Copy Link">
+                <i class="fa-solid fa-link"></i>
+              </button>
+              <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri|urlencode }}"
+                target="_blank" class="share-icon-btn" title="Share on LinkedIn">
+                <i class="fa-brands fa-linkedin-in"></i>
+              </a>
+              <a href="https://api.whatsapp.com/send?text={{ blog.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+                target="_blank" class="share-icon-btn" title="Share on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Featured Banner Image -->
+          {% if blog.get_detail_image_url %}
+          <div class="blog-hero-banner">
+            <img src="{{ blog.get_detail_image_url }}" alt="{{ blog.title }}">
+          </div>
+          {% endif %}
+
+          <!-- Main Body Content -->
+          <div class="blog-post-content" id="blog-article-body">
+            {{ blog.content|safe }}
+          </div>          <!-- Article Footer Navigation Buttons -->
+          <div
+            style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <a href="{% url 'portfolio:blog_list' %}" class="btn btn-ghost"
+              style="font-size: 14px; padding: 12px 24px; font-weight: 600; border-radius: 10px; text-decoration: none;">
+              <i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> Back to All Articles
+            </a>
+            <a href="{% url 'portfolio:home' %}#contact" class="btn btn-primary"
+              style="font-size: 14px; padding: 12px 24px; font-weight: 600; border-radius: 10px; text-decoration: none;">
+              Connect with Sahil <i class="fa-solid fa-paper-plane" style="margin-left: 6px;"></i>
+            </a>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Sidebar Cards -->
+        <div class="blog-sidebar-column">
+
+          <!-- Sidebar Card 1: Table of Contents (Dynamic JS generated) -->
+          <div class="sidebar-card" id="toc-widget" style="display: none;">
+            <div class="sidebar-card-title">
+              <i class="fa-solid fa-list-ul" style="color: var(--cyan);"></i> Table of Contents
+            </div>
+            <ul class="toc-list-container" id="toc-list-target">
+              <!-- Dynamically populated via JS -->
+            </ul>
+          </div>
+
+          <!-- Sidebar Card 2: About the Author -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">
+              <i class="fa-solid fa-user-gear" style="color: var(--cyan);"></i> About the Author
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+              <div
+                style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), #7C3AED); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; font-family: 'Space Grotesk', sans-serif; flex-shrink: 0;">
+                ST
+              </div>
+              <div>
+                <h4
+                  style="font-family: 'Space Grotesk', sans-serif; font-size: 15.5px; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">
+                  {{ blog.author|default:"Sahil Thakur" }}
+                </h4>
+                <span style="font-size: 12.5px; color: #64748B; font-weight: 500;">Automation & AI Specialist</span>
+              </div>
+            </div>
+            <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin-bottom: 16px;">
+              I build & share automation workflows using n8n, Python, and Django to help creators and businesses save
+              time.
+            </p>
+            <div style="display: flex; gap: 10px;">
+              <a href="https://github.com/sahil51" target="_blank" class="share-icon-btn"
+                style="width: 32px; height: 32px; font-size: 13px;" title="GitHub">
+                <i class="fa-brands fa-github"></i>
+              </a>
+              <a href="https://linkedin.com" target="_blank" class="share-icon-btn"
+                style="width: 32px; height: 32px; font-size: 13px;" title="LinkedIn">
+                <i class="fa-brands fa-linkedin-in"></i>
+              </a>
+              <a href="{% url 'portfolio:home' %}#contact" class="share-icon-btn"
+                style="width: 32px; height: 32px; font-size: 13px;" title="Contact">
+                <i class="fa-solid fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Sidebar Card 3: Related Posts -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">
+              <i class="fa-solid fa-layer-group" style="color: var(--cyan);"></i> Related Posts
+            </div>
+
+            {% if recent_blogs %}
+            <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 18px;">
+              {% for item in recent_blogs %}
+              <a href="{% url 'portfolio:blog_detail' slug=item.slug %}"
+                style="text-decoration: none; display: flex; gap: 12px; align-items: flex-start; transition: transform 0.2s;"
+                onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+                {% if item.get_card_image_url %}
+                <img src="{{ item.get_card_image_url }}" alt="{{ item.title }}"
+                  style="width: 58px; height: 58px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid #E2E8F0;">
+                {% else %}
+                <div
+                  style="width: 58px; height: 58px; border-radius: 10px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1)); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid #E2E8F0;">
+                  <i class="fa-solid fa-file-code"></i>
+                </div>
+                {% endif %}
+                <div style="flex: 1; min-width: 0;">
+                  <h4
+                    style="font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 700; color: #0F172A; line-height: 1.35; margin: 0 0 4px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ item.title }}
+                  </h4>
+                  <span style="font-size: 11.5px; color: #94A3B8;">
+                    {{ item.created_at|date:"M d, Y" }}
+                  </span>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size: 13px; color: #64748B; margin-bottom: 16px;">No related posts found.</p>
+            {% endif %}
+
+            <a href="{% url 'portfolio:blog_list' %}"
+              style="font-size: 13px; font-weight: 700; color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: gap 0.2s;"
+              onmouseover="this.style.gap='10px'" onmouseout="this.style.gap='6px'">
+              View all posts <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+
+        </div>
+
       </div>
 
     </div>
-  </div>
-</section>
+
+  </section>
 
 </main>
+
+<!-- Dynamic Table of Contents Generator Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const articleBody = document.getElementById('blog-article-body');
+    const tocWidget = document.getElementById('toc-widget');
+    const tocContainer = document.getElementById('toc-list-target');
+
+    if (!articleBody || !tocWidget || !tocContainer) return;
+
+    const headings = articleBody.querySelectorAll('h2, h3');
+    if (headings.length === 0) return;
+
+    headings.forEach((heading, index) => {
+      if (!heading.id) {
+        heading.id = 'heading-' + index;
+      }
+
+      const li = document.createElement('li');
+      if (heading.tagName.toLowerCase() === 'h3') {
+        li.classList.add('toc-h3');
+      }
+
+      const a = document.createElement('a');
+      a.href = '#' + heading.id;
+      a.textContent = heading.textContent;
+
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        heading.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      li.appendChild(a);
+      tocContainer.appendChild(li);
+    });
+
+    tocWidget.style.display = 'block';
+  });
+</script>
 {% endblock %}

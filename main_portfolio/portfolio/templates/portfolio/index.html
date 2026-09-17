@@ -245,21 +245,57 @@
     <h2 class="section-title reveal">Featured <span>Projects</span></h2>
     <div class="projects-grid">
       {% for proj in projects %}
+      {% if proj.get_project_url != '#' %}
+      <a href="{{ proj.get_project_url }}" class="proj-card reveal" style="text-decoration: none; color: inherit; display: flex; cursor: pointer;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
+      {% else %}
       <div class="proj-card reveal">
+      {% endif %}
         <div class="proj-content">
-          <div class="proj-number">PROJECT — {{ proj.number|stringformat:"02d" }}</div>
-          <div class="proj-icon">
-              <i class="{{ proj.icon_class }}"></i>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+            <div class="proj-number">PROJECT — {{ proj.number|stringformat:"02d" }}</div>
+            {% if proj.blog_post %}
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--purple); background: rgba(124, 58, 237, 0.08); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(124, 58, 237, 0.25); text-transform: uppercase; letter-spacing: 0.5px;">
+              <i class="fa-solid fa-book-open" style="margin-right: 4px;"></i>CASE STUDY
+            </span>
+            {% endif %}
           </div>
-          <div class="proj-name">{{ proj.title }}</div>
+          <div class="proj-icon">
+            <i class="{{ proj.icon_class }}"></i>
+          </div>
+          <h3 class="proj-name" style="margin-bottom: 12px; transition: color 0.2s;">
+            {{ proj.title }}
+          </h3>
           <div class="proj-desc">{{ proj.description }}</div>
           <div class="proj-stack">
             {% for tech in proj.get_technologies_list %}
             <span class="proj-tag">{{ tech }}</span>
             {% endfor %}
           </div>
+
+          {% if proj.get_project_url != '#' %}
+          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #F1F5F9; display: flex; justify-content: flex-end; align-items: center;">
+            <span class="proj-read-link" style="font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--cyan); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+              {% if proj.blog_post %}
+              Read Article <i class="fa-solid fa-arrow-right-long"></i>
+              {% else %}
+              View Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              {% endif %}
+            </span>
+          </div>
+          {% endif %}
         </div>
+      {% if proj.get_project_url != '#' %}
+      </a>
+      {% else %}
       </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Mobile Carousel Dots Indicator -->
+    <div class="projects-carousel-dots">
+      {% for proj in projects %}
+      <span class="proj-dot {% if forloop.first %}active{% endif %}"></span>
       {% endfor %}
     </div>
   </div>
@@ -323,7 +359,7 @@
               </h3>
 
               <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                {{ blog.summary }}
+                {{ blog.summary|striptags }}
               </p>
             </div>
 
@@ -348,6 +384,15 @@
       {% endif %}
     </div>
 
+    <!-- Mobile Blogs Carousel Dots Indicator -->
+    {% if latest_blogs %}
+    <div class="blogs-carousel-dots">
+      {% for blog in latest_blogs %}
+      <span class="blog-dot {% if forloop.first %}active{% endif %}"></span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
   </div>
 </section>
 
@@ -359,24 +404,33 @@
     <div class="edu-grid">
       {% for edu in educations %}
       <div class="edu-card reveal">
-        <div>
-          <div class="edu-badge">
-              <i class="fa-solid fa-graduation-cap"></i> 
-              Degree
+        <div class="edu-card-top">
+          <div class="edu-header-row">
+            <div>
+              <div class="edu-badge">
+                <i class="fa-solid fa-graduation-cap"></i> Degree
+              </div>
+              <div class="edu-inst">{{ edu.institution }}</div>
+              <div class="edu-degree">{{ edu.degree }}</div>
+            </div>
+            <div class="edu-date-col">
+              <div class="edu-date"><i class="fa-regular fa-calendar-check" style="margin-right: 4px; color: var(--cyan);"></i> {{ edu.duration }}</div>
+              {% if edu.location %}
+              <div class="edu-location"><i class="fa-solid fa-location-dot" style="margin-right: 4px; color: var(--purple);"></i> {{ edu.location }}</div>
+              {% endif %}
+            </div>
           </div>
-          <div class="edu-inst">{{ edu.institution }}</div>
-          <div class="edu-degree">{{ edu.degree }}</div>
-          
+        </div>
+
+        {% if edu.get_scores_list %}
+        <div class="edu-card-bottom">
           <div class="edu-scores">
             {% for score in edu.get_scores_list %}
             <span class="edu-score">{{ score }}</span>
             {% endfor %}
           </div>
         </div>
-        <div class="edu-date-col">
-          <div class="edu-date">{{ edu.duration }}</div>
-          <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">{{ edu.location }}</div>
-        </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -384,14 +438,14 @@
 </section>
 
 <!-- MARKETING FUNNEL CTA -->
-<section id="cta-funnel" style="background: var(--bg); padding: 80px 5vw;">
-  <div class="funnel-card reveal" style="max-width: 1000px; margin: 0 auto; background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%); border-radius: 24px; padding: 60px 40px; text-align: center; color: #FFFFFF; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25); position: relative; overflow: hidden;">
+<section id="cta-funnel">
+  <div class="funnel-card reveal">
     <div style="position: absolute; top: -50px; left: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(30px); pointer-events: none;"></div>
     <div style="position: absolute; bottom: -50px; right: -50px; width: 250px; height: 250px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(40px); pointer-events: none;"></div>
     <div style="position: relative; z-index: 1;">
-      <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700; margin-bottom: 20px; letter-spacing: -1px; color: #FFFFFF;">Ready to build something amazing?</h2>
-      <p style="font-size: 18px; line-height: 1.6; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; color: rgba(255,255,255,0.9);">Let's turn your ideas into scalable, robust software.</p>
-      <a href="#contact" class="funnel-btn" style="background: #FFFFFF; color: var(--purple); font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 36px; border-radius: 12px; display: inline-block; text-decoration: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: all 0.3s;">Start a Project</a>
+      <h2 class="funnel-title">Ready to build something amazing?</h2>
+      <p class="funnel-desc">Let's turn your ideas into scalable, robust software.</p>
+      <a href="#contact" class="funnel-btn">Start a Project <i class="fa-solid fa-arrow-right" style="margin-left: 6px; font-size: 13px;"></i></a>
     </div>
   </div>
 </section>
@@ -461,5 +515,79 @@
 <!-- Inject typed roles from DB as JSON -->
 <script>
   window.TYPED_ROLES = {{ roles|safe }};
+
+  // Projects Mobile Carousel Dot Sync
+  document.addEventListener('DOMContentLoaded', () => {
+    const projGrid = document.querySelector('.projects-grid');
+    const projDots = document.querySelectorAll('.proj-dot');
+    if (projGrid && projDots.length) {
+      projGrid.addEventListener('scroll', () => {
+        const scrollPos = projGrid.scrollLeft;
+        const firstCard = projGrid.querySelector('.proj-card');
+        const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 300;
+        const activeIdx = Math.min(Math.round(scrollPos / cardWidth), projDots.length - 1);
+        projDots.forEach((dot, i) => dot.classList.toggle('active', i === activeIdx));
+      }, { passive: true });
+    }
+
+    // Blogs Mobile Carousel Auto Slider
+    const blogsGrid = document.querySelector('.blogs-grid');
+    const blogDots = document.querySelectorAll('.blog-dot');
+    if (blogsGrid && blogDots.length) {
+      let autoSlideTimer = null;
+      let currentBlogIdx = 0;
+
+      function getBlogCardWidth() {
+        const firstCard = blogsGrid.querySelector('.blog-card');
+        return firstCard ? firstCard.offsetWidth + 16 : 300;
+      }
+
+      function scrollToBlog(index) {
+        const cardWidth = getBlogCardWidth();
+        blogsGrid.scrollTo({
+          left: index * cardWidth,
+          behavior: 'smooth'
+        });
+      }
+
+      function startAutoSlide() {
+        if (window.innerWidth > 768) return;
+        stopAutoSlide();
+        autoSlideTimer = setInterval(() => {
+          const totalCards = blogDots.length;
+          currentBlogIdx = (currentBlogIdx + 1) % totalCards;
+          scrollToBlog(currentBlogIdx);
+        }, 3500);
+      }
+
+      function stopAutoSlide() {
+        if (autoSlideTimer) {
+          clearInterval(autoSlideTimer);
+          autoSlideTimer = null;
+        }
+      }
+
+      blogsGrid.addEventListener('scroll', () => {
+        const scrollPos = blogsGrid.scrollLeft;
+        const cardWidth = getBlogCardWidth();
+        const activeIdx = Math.min(Math.round(scrollPos / cardWidth), blogDots.length - 1);
+        currentBlogIdx = activeIdx;
+        blogDots.forEach((dot, i) => dot.classList.toggle('active', i === activeIdx));
+      }, { passive: true });
+
+      // Pause on user interaction (touch/hover)
+      blogsGrid.addEventListener('touchstart', stopAutoSlide, { passive: true });
+      blogsGrid.addEventListener('touchend', () => setTimeout(startAutoSlide, 2500), { passive: true });
+      blogsGrid.addEventListener('mouseenter', stopAutoSlide);
+      blogsGrid.addEventListener('mouseleave', () => setTimeout(startAutoSlide, 2500));
+
+      // Initial start
+      startAutoSlide();
+      window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) startAutoSlide();
+        else stopAutoSlide();
+      });
+    }
+  });
 </script>
 {% endblock %}

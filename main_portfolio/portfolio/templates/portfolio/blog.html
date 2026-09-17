@@ -4,80 +4,509 @@
 {% block title %}Blog & Engineering Articles | Sahil Thakur{% endblock %}
 {% block description %}Articles, tutorials, and engineering insights on Python, Django, FastAPI, Redis, Docker, and Agentic AI by Sahil Thakur.{% endblock %}
 
+{% block extra_css %}
+<style>
+  .blog-listing-section {
+    padding: 120px 0 90px;
+    min-height: 85vh;
+    background: var(--bg);
+  }
+
+  .blog-listing-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 4vw;
+    box-sizing: border-box;
+  }
+
+  /* Header Section */
+  .blog-page-header {
+    margin-bottom: 36px;
+  }
+
+  .blog-breadcrumb-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    transition: transform 0.2s ease;
+  }
+
+  .blog-breadcrumb-link:hover {
+    transform: translateX(-4px);
+  }
+
+  .blog-badge-tag {
+    display: inline-block;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--cyan);
+    font-weight: 700;
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 12px;
+  }
+
+  .blog-page-title {
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 800;
+    color: #0F172A;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .blog-page-title span {
+    color: var(--cyan);
+  }
+
+  .blog-page-desc {
+    color: #475569;
+    font-size: 16.5px;
+    max-width: 680px;
+    line-height: 1.65;
+    margin-bottom: 0;
+  }
+
+  /* Filter & Search Bar */
+  .blog-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #E2E8F0;
+    flex-wrap: wrap;
+  }
+
+  .blog-category-pills {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .cat-pill-btn {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    color: #64748B;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 7px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .cat-pill-btn:hover,
+  .cat-pill-btn.active {
+    background: #0F172A;
+    color: #FFFFFF;
+    border-color: #0F172A;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  }
+
+  .blog-search-box {
+    position: relative;
+    width: 280px;
+  }
+
+  .blog-search-box input {
+    width: 100%;
+    padding: 8px 16px 8px 38px;
+    border-radius: 20px;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    font-size: 13.5px;
+    color: #0F172A;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .blog-search-box input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .blog-search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 13px;
+  }
+
+  /* Articles Grid (3 Columns Equal Height) */
+  .blog-articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 32px;
+  }
+
+  .blog-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+  }
+
+  .blog-card:hover {
+    border-color: rgba(37, 99, 235, 0.35);
+    box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.08);
+    transform: translateY(-4px);
+  }
+
+  .blog-card-image-box {
+    position: relative;
+    width: 100%;
+    height: 210px;
+    overflow: hidden;
+    background: #F8FAFC;
+    flex-shrink: 0;
+  }
+
+  .blog-card-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .blog-card:hover .blog-card-image-box img {
+    transform: scale(1.05);
+  }
+
+  .blog-card-category-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    color: #38BDF8;
+    font-weight: 700;
+    font-size: 10.5px;
+    padding: 5px 13px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+  }
+
+  .blog-card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  .blog-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.38;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.2s ease;
+  }
+
+  .blog-card:hover .blog-card-title {
+    color: var(--cyan);
+  }
+
+  .blog-card-excerpt {
+    color: #475569;
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .blog-card-footer {
+    padding-top: 18px;
+    border-top: 1px solid #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .blog-card-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar-small-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), #7C3AED);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .blog-card-author-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+
+  .blog-card-meta {
+    font-size: 12px;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .blog-card-read-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--cyan);
+    font-size: 13.5px;
+    font-weight: 700;
+    transition: gap 0.2s ease;
+  }
+
+  .blog-card:hover .blog-card-read-link {
+    gap: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .blog-listing-section {
+      padding: 95px 0 60px;
+    }
+    .blog-page-header {
+      margin-bottom: 24px;
+    }
+    .blog-page-title {
+      font-size: clamp(26px, 7vw, 36px);
+    }
+    .blog-page-desc {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .blog-filter-bar {
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+    }
+    .blog-category-pills {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      width: 100%;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .blog-category-pills::-webkit-scrollbar {
+      display: none;
+    }
+    .cat-pill-btn {
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 6px 14px;
+      font-size: 12.5px;
+    }
+    .blog-search-box {
+      width: 100%;
+    }
+    .blog-articles-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .blog-card-image-box {
+      height: 180px;
+    }
+    .blog-card-body {
+      padding: 18px;
+    }
+    .blog-card-title {
+      font-size: 17.5px;
+    }
+    .blog-card:active {
+      transform: scale(0.98);
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <main>
-    
-<section id="blog-list" style="padding: 120px 6vw 80px; min-height: 85vh; background: var(--bg);">
-  <div class="section-inner" style="max-width: 1200px; margin: 0 auto;">
-    <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan); margin-bottom: 12px; font-weight: 600;">
-      <a href="{% url 'portfolio:home' %}" style="color: var(--cyan); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
-    </div>
-    
-    <div class="section-label reveal visible" style="color: var(--cyan); font-weight: 700; letter-spacing: 2px;">Insights & Articles</div>
-    <h1 class="section-title reveal visible" style="margin-bottom: 16px; font-size: clamp(32px, 4vw, 48px); font-weight: 800; color: #0F172A;">
-      Engineering <span>Blog</span>
-    </h1>
-    <p class="reveal visible" style="color: #475569; font-size: 17px; max-width: 700px; margin-bottom: 48px; line-height: 1.7;">
-      In-depth guides, architecture breakdown, and thoughts on Python backend systems, AI agents, RAG, and scalable cloud applications.
-    </p>
-    
-    <div class="skills-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 28px;">
-    {% if blogs %}
+
+  <section class="blog-listing-section">
+    <div class="blog-listing-container">
+
+      <!-- Header Section -->
+      <div class="blog-page-header">
+        <a href="{% url 'portfolio:home' %}" class="blog-breadcrumb-link">
+          <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+        <br>
+        <h1 class="blog-page-title">
+          Engineering <span>Blog</span>
+        </h1>
+        <p class="blog-page-desc">
+          In-depth architecture breakdowns, technical tutorials, and thoughts on Python backend systems, AI agents,
+          RAG, and cloud infrastructure.
+        </p>
+      </div>
+
+      <!-- Filter & Search Bar -->
+      <div class="blog-filter-bar">
+        <div class="blog-category-pills">
+          <button class="cat-pill-btn active" onclick="filterCategory('all', this)">All Articles</button>
+          {% for cat in categories %}
+          <button class="cat-pill-btn" onclick="filterCategory('{{ cat|escapejs }}', this)">{{ cat }}</button>
+          {% endfor %}
+        </div>
+
+        <div class="blog-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="articleSearchInput" placeholder="Search articles..." onkeyup="searchArticles()">
+        </div>
+      </div>
+
+      {% if blogs %}
+
+      <!-- ARTICLES GRID (Clean Equal Cards) -->
+      <div class="blog-articles-grid" id="articlesGrid">
         {% for blog in blogs %}
-        <div class="skill-card reveal visible" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 280px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04); transition: all 0.3s ease; overflow: hidden;">
-          {% if blog.get_card_image_url %}
-          <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="display: block; overflow: hidden; max-height: 200px; position: relative;">
-            <img src="{{ blog.get_card_image_url }}" alt="{{ blog.title }}" style="width: 100%; height: 180px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            {% if blog.category %}
-            <span style="position: absolute; top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); color: #38BDF8; font-weight: 700; font-size: 11px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; border: 1px solid rgba(56, 189, 248, 0.3);">
-              {{ blog.category }}
-            </span>
+        <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" class="blog-card article-item"
+          data-category="{{ blog.category|default:'Technology' }}" data-title="{{ blog.title|lower }}">
+
+          <div class="blog-card-image-box">
+            {% if blog.get_card_image_url %}
+            <img src="{{ blog.get_card_image_url }}" alt="{{ blog.title }}">
+            {% else %}
+            <div
+              style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08)); color: var(--cyan); font-size: 32px;">
+              <i class="fa-solid fa-newspaper"></i>
+            </div>
             {% endif %}
-          </a>
-          {% endif %}
-          <div style="padding: 24px;">
+
+            {% if blog.category %}
+            <span class="blog-card-category-badge">{{ blog.category }}</span>
+            {% endif %}
+          </div>
+
+          <div class="blog-card-body">
             <div>
-              {% if not blog.get_card_image_url and blog.category %}
-              <div style="margin-bottom: 12px;">
-                <span style="background: rgba(37, 99, 235, 0.08); color: var(--cyan); font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                  {{ blog.category }}
-                </span>
-              </div>
-              {% endif %}
-              <div class="skill-card-header" style="margin-bottom: 14px; display: flex; align-items: center; gap: 14px;">
-                <div class="skill-card-icon" style="width: 42px; height: 42px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08)); color: var(--cyan); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
-                  <i class="fa-solid fa-newspaper"></i>
-                </div>
-                <div class="skill-card-title" style="font-size: 16px; font-weight: 700; color: #0F172A; line-height: 1.4; text-transform: none; letter-spacing: normal;">
-                  {{ blog.title }}
-                </div>
-              </div>
-              <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-                {{ blog.summary|truncatewords:26 }}
+              <h2 class="blog-card-title">
+                {{ blog.title }}
+              </h2>
+
+              <p class="blog-card-excerpt">
+                {{ blog.clean_summary|truncatewords:26 }}
               </p>
             </div>
+
             <div>
-              <div style="display: flex; align-items: center; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan); margin-bottom: 16px; font-weight: 600;">
-                <span><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i> {{ blog.created_at|date:"F d, Y" }}</span>
-                <span style="color: #64748B;"><i class="fa-regular fa-user" style="margin-right: 4px;"></i> {{ blog.author|default:"Sahil Thakur" }}</span>
+              <div class="blog-card-footer">
+                <div class="blog-card-author">
+                  <div class="avatar-small-circle">ST</div>
+                  <div>
+                    <div class="blog-card-author-name">{{ blog.author|default:"Sahil Thakur" }}</div>
+                    <div class="blog-card-meta">
+                      <span>{{ blog.created_at|date:"M d, Y" }}</span>
+                      <span>•</span>
+                      <span><i class="fa-regular fa-clock"></i> {{ blog.read_time }}m</span>
+                    </div>
+                  </div>
+                </div>
+
+                <span class="blog-card-read-link">
+                  Read <i class="fa-solid fa-arrow-right"></i>
+                </span>
               </div>
-              <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" class="btn btn-primary" style="padding: 12px 20px; font-size: 14px; text-decoration: none; border-radius: 10px; width: 100%; text-align: center; display: block; box-sizing: border-box; font-weight: 600;">
-                Read Full Article →
-              </a>
             </div>
+
           </div>
-        </div>
+        </a>
         {% endfor %}
-    {% else %}
-        <div style="text-align:center; padding: 60px 20px; color: #64748B; width: 100%; grid-column: 1 / -1; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px;">
-          <i class="fa-solid fa-pen-nib" style="font-size: 40px; margin-bottom: 16px; color: var(--cyan);"></i>
-          <h3 style="color: #0F172A; font-size: 20px; margin-bottom: 8px;">No Articles Published Yet</h3>
-          <p style="font-size: 15px; margin: 0;">Check back soon for upcoming technical tutorials and architecture guides!</p>
-        </div>
-    {% endif %}
+      </div>
+
+      {% else %}
+
+      <div
+        style="text-align:center; padding: 70px 24px; color: #64748B; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px;">
+        <i class="fa-solid fa-pen-nib" style="font-size: 44px; margin-bottom: 16px; color: var(--cyan);"></i>
+        <h3 style="color: #0F172A; font-size: 22px; margin-bottom: 8px; font-family: 'Space Grotesk', sans-serif;">No
+          Articles Published Yet</h3>
+        <p style="font-size: 15px; margin: 0;">Check back soon for technical tutorials and engineering guides!</p>
+      </div>
+
+      {% endif %}
+
     </div>
-  </div>
-</section>
+  </section>
 
 </main>
+
+<!-- Client-side Interactive Search & Category Filter Script -->
+<script>
+  function filterCategory(cat, btn) {
+    document.querySelectorAll('.cat-pill-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    const articles = document.querySelectorAll('.article-item');
+    articles.forEach(article => {
+      const articleCat = article.getAttribute('data-category') || '';
+      if (cat === 'all' || articleCat.toLowerCase().includes(cat.toLowerCase())) {
+        article.style.display = 'flex';
+      } else {
+        article.style.display = 'none';
+      }
+    });
+  }
+
+  function searchArticles() {
+    const input = document.getElementById('articleSearchInput').value.toLowerCase();
+    const articles = document.querySelectorAll('.article-item');
+
+    articles.forEach(article => {
+      const title = article.getAttribute('data-title') || '';
+      const text = article.textContent.toLowerCase();
+
+      if (title.includes(input) || text.includes(input)) {
+        article.style.display = 'flex';
+      } else {
+        article.style.display = 'none';
+      }
+    });
+  }
+</script>
 {% endblock %}

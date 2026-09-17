@@ -39,11 +39,14 @@ def home_view(request):
 
 def blog_list_view(request):
     blogs = BlogPost.objects.filter(status='Published').order_by('-created_at')
-    return render(request, 'portfolio/blog.html', {'blogs': blogs})
+    categories = BlogPost.objects.filter(status='Published').values_list('category', flat=True).distinct()
+    categories = [cat.strip() for cat in categories if cat and cat.strip()]
+    return render(request, 'portfolio/blog.html', {'blogs': blogs, 'categories': categories})
 
 def blog_detail_view(request, slug):
     blog = get_object_or_404(BlogPost, slug=slug, status='Published')
-    return render(request, 'portfolio/blog_detail.html', {'blog': blog})
+    recent_blogs = BlogPost.objects.filter(status='Published').exclude(id=blog.id).order_by('-created_at')[:4]
+    return render(request, 'portfolio/blog_detail.html', {'blog': blog, 'recent_blogs': recent_blogs})
 
 def visitors_view(request):
     visitors = Visitor.objects.all().order_by('-created_at')

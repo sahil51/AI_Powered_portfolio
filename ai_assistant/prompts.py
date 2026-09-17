@@ -4,15 +4,9 @@ from pathlib import Path
 
 PROMPTS_PATH = Path(__file__).resolve().parent / "prompts.toml"
 
-_cache: dict | None = None
-
-
 def load_prompts() -> dict:
-    global _cache
-    if _cache is None:
-        with open(PROMPTS_PATH, "rb") as f:
-            _cache = tomllib.load(f)
-    return _cache
+    with open(PROMPTS_PATH, "rb") as f:
+        return tomllib.load(f)
 
 
 def clear_cache():
