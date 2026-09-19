@@ -21,7 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env', override=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-6ym1xv!hqy*(ir841tx$q0a!x0e3ja1##k&1j&)q^je*r3pg$i')
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes'):
+        SECRET_KEY = 'django-insecure-6ym1xv!hqy*(ir841tx$q0a!x0e3ja1##k&1j&)q^je*r3pg$i'
+    else:
+        raise ValueError("CRITICAL SECURITY ERROR: SECRET_KEY environment variable is not configured for production!")
 
 # Universal API Security Key for external integrations (n8n, Webhooks, AI microservice)
 UNIVERSAL_API_KEY = os.getenv('UNIVERSAL_API_KEY', '8bb1ff6b2e8d1d6ea291d3f3f21dd505f1d3283d011ccc8b8452791b50fe3294')
@@ -29,7 +34,15 @@ UNIVERSAL_API_KEY = os.getenv('UNIVERSAL_API_KEY', '8bb1ff6b2e8d1d6ea291d3f3f21d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ["*"]
+# Host and CSRF Lockdown:
+# Allows local dev, test runner, and any *.onrender.com subdomain by default, configurable via environment
+default_hosts = 'localhost,127.0.0.1,.onrender.com,testserver'
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', default_hosts)
+ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+
+default_csrf = 'https://*.onrender.com,http://localhost:8000,http://127.0.0.1:8000'
+csrf_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', default_csrf)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(',') if o.strip()]
 
 
 # Application definition
@@ -47,6 +60,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -139,11 +153,21 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AI Assistant Microservice API URL loaded from environment
+# Live AI Assistant Microservice Configuration (Render)
+AI_SERVICE_URL = os.getenv('AI_SERVICE_URL', 'https://ai-portfolio-ai-service.onrender.com').rstrip('/')
+AI_SERVICE_INTERNAL_KEY = os.getenv('AI_SERVICE_INTERNAL_KEY', 'd59e355c3c0a2b0b14467d55ed59e211e40562e8484196144e54823293883bfd')
 CHAT_API_URL = os.getenv('CHAT_API_URL', '/api/chat/')
+REINDEX_WEBHOOK_URL = os.getenv('REINDEX_WEBHOOK_URL', f"{AI_SERVICE_URL}/api/reindex")
 
-# Reindex webhook URL for portfolio sync with AI microservice
-REINDEX_WEBHOOK_URL = os.getenv('REINDEX_WEBHOOK_URL', 'http://127.0.0.1:8000/admin/reindex-portfolio')
+# Static files storage for production with Whitenoise
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Email Configuration (SMTP)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
@@ -216,3 +240,21 @@ JAZZMIN_SETTINGS = {
         {"name": "Home", "url": "/", "permissions": ["auth.view_user"]},
     ],
 }
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRODUCTION SECURITY HARDENING (Headers, Cookies, Clickjacking, XSS)
+# ═══════════════════════════════════════════════════════════════════════════
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'true').lower() in ('true', '1')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False  # Allows JS to read for fetch X-CSRFToken header
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

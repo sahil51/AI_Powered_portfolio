@@ -213,6 +213,21 @@ function removeMeetingUi(bodyEl) {
 }
 
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
 const CHAT_API_URL = window.CHAT_API_URL || '/api/chat/';
 const chatBtn = document.getElementById('chatBtn');
 const chatWindow = document.getElementById('chatWindow');
@@ -266,13 +281,13 @@ function connectWebSocket() {
       const payloadStr = JSON.stringify(payload);
 
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        const csrfToken = getCookie('csrftoken');
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
         const response = await fetch(CHAT_API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Internal-API-Key': 'd59e355c3c0a2b0b14467d55ed59e211e40562e8484196144e54823293883bfd'
-          },
+          headers: headers,
           body: payloadStr
         });
 

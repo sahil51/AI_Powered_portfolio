@@ -488,6 +488,8 @@
           {% endif %}
           <form id="contact-form" action="{% url 'portfolio:contact_submit' %}" method="POST" class="contact-form">
             {% csrf_token %}
+            <!-- Anti-Spam Honeypot Field -->
+            <input type="text" name="website_hp" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
             <div class="form-group">
               <label for="id_name">Your Name</label>
               <input type="text" id="id_name" name="name" class="form-control" placeholder="John Doe" required>

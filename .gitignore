@@ -44,9 +44,11 @@ docker-compose.override.yml
 .DS_Store
 Thumbs.db
 
-# Uploads
+# Uploads & Static
 uploads/
 media/
+staticfiles/
+*.gz
 
 # Celery
 celerybeat-schedule

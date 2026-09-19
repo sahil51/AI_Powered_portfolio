@@ -29,18 +29,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+import os
+
+cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+if cors_env:
+    allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+else:
+    allowed_origins = [
         "https://automation.crescaler.com",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
-        "http://localhost:8001",
-        "http://127.0.0.1:8001",
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Internal-API-Key", "Authorization", "X-CSRFToken"],
 )
 
 app.include_router(chat_router, prefix="/api")

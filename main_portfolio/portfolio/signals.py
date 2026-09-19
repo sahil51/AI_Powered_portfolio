@@ -16,15 +16,16 @@ from portfolio.models import (
 
 PORTFOLIO_MODELS = [HeroInfo, Project, Experience, Skill, SkillCategory, Education, BlogPost, ContactMethod]
 
-MICROSERVICE_URL = getattr(settings, "REINDEX_WEBHOOK_URL", "http://127.0.0.1:8001/api/reindex")
+DEFAULT_REINDEX_URL = "https://ai-portfolio-ai-service.onrender.com/api/reindex"
 
 
 def _async_post():
+    reindex_url = getattr(settings, "REINDEX_WEBHOOK_URL", DEFAULT_REINDEX_URL)
     try:
-        resp = requests.post(MICROSERVICE_URL, timeout=10)
-        print(f"[Vector Reindex Signal] AI Assistant Vector Store Updated automatically: {resp.status_code}")
+        resp = requests.post(reindex_url, timeout=30)
+        print(f"[Vector Reindex Signal] Live AI Assistant Vector Store Updated: {resp.status_code}")
     except Exception as e:
-        print(f"[Vector Reindex Signal] Notice: Could not notify AI Assistant reindex API: {e}")
+        print(f"[Vector Reindex Signal] Notice: Could not notify AI Assistant reindex API ({reindex_url}): {e}")
 
 
 def _trigger_reindex(sender, instance, **kwargs):

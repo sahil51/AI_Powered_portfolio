@@ -11,4 +11,5 @@ urlpatterns = [
     path('contact/submit/', views.contact_submit_view, name='contact_submit'),
     path('api/blog/create/', views.api_create_blog_post, name='api_create_blog_post'),
     path('api/blog/add/', views.api_create_blog_post, name='api_add_blog_post'),
+    path('api/chat/', views.chat_proxy_view, name='chat_proxy'),
 ]

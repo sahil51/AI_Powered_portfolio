@@ -75,7 +75,7 @@ async def retrieve(query: str, top_k: int = 8) -> list[dict]:
     return results[:top_k * 2]
 
 
-async def keyword_fallback(query: str, top_k: 8) -> list[dict]:
+async def keyword_fallback(query: str, top_k: int = 8) -> list[dict]:
     if not embedding_store.is_ready():
         return []
 

@@ -43,7 +43,9 @@
       <li><a href="{% url 'portfolio:home' %}#projects">Projects</a></li>
       <li><a href="{% url 'portfolio:home' %}#education">Education</a></li>
       <li><a href="{% url 'portfolio:blog_list' %}">Blog</a></li>
+      {% if user.is_staff %}
       <li><a href="{% url 'portfolio:visitors' %}">Visitors</a></li>
+      {% endif %}
       <li><a href="{% url 'portfolio:home' %}#contact">Contact</a></li>
     </ul>
     <div class="nav-actions">
@@ -71,7 +73,9 @@
     <a href="{% url 'portfolio:home' %}#projects" class="mm-link">Projects</a>
     <a href="{% url 'portfolio:home' %}#education" class="mm-link">Education</a>
     <a href="{% url 'portfolio:blog_list' %}" class="mm-link">Blog</a>
+    {% if user.is_staff %}
     <a href="{% url 'portfolio:visitors' %}" class="mm-link">Visitors</a>
+    {% endif %}
     <a href="{% url 'portfolio:home' %}#contact" class="mm-link">Contact</a>
     <a href="https://wa.me/917404304607" class="mm-link" target="_blank" rel="noopener noreferrer"
       style="color:#25D366; display: flex; align-items: center; gap: 8px;">

@@ -1,11 +1,39 @@
 import json
+import time
+import secrets
+from collections import defaultdict
+import requests as http_requests
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo
+
+# ── Security & Rate Limiting (In-Memory IP Bucket) ──────────────────────────
+_chat_ip_timestamps = defaultdict(list)
+_contact_ip_timestamps = defaultdict(list)
+_blog_api_ip_timestamps = defaultdict(list)
+
+def _get_client_ip(request):
+    """Safely extracts client IP address, supporting proxies."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', '127.0.0.1')
+
+def _is_rate_limited(ip: str, store: dict, max_requests: int = 20, window_seconds: int = 60) -> bool:
+    """Sliding-window IP rate limiter."""
+    now = time.time()
+    cutoff = now - window_seconds
+    timestamps = [t for t in store[ip] if t > cutoff]
+    store[ip] = timestamps
+    if len(timestamps) >= max_requests:
+        return True
+    store[ip].append(now)
+    return False
 
 def home_view(request):
     hero = HeroInfo.objects.first()
@@ -48,12 +76,94 @@ def blog_detail_view(request, slug):
     recent_blogs = BlogPost.objects.filter(status='Published').exclude(id=blog.id).order_by('-created_at')[:4]
     return render(request, 'portfolio/blog_detail.html', {'blog': blog, 'recent_blogs': recent_blogs})
 
+@staff_member_required(login_url='admin:login')
 def visitors_view(request):
     visitors = Visitor.objects.all().order_by('-created_at')
     return render(request, 'portfolio/visitors.html', {'visitors': visitors})
 
+
+@csrf_exempt
+def chat_proxy_view(request):
+    """
+    Secure server-side proxy view for Daisy AI Assistant.
+    Forwards user queries from frontend to the live Render AI microservice.
+    Enforces IP rate limiting, input length bounds, and shields internal keys.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed. Use POST.'}, status=405)
+
+    client_ip = _get_client_ip(request)
+    if _is_rate_limited(client_ip, _chat_ip_timestamps, max_requests=25, window_seconds=60):
+        return JsonResponse({
+            'message': "Too many messages sent. Please wait a moment before sending more.",
+            'rate_limited': True
+        }, status=429)
+
+    try:
+        if request.body:
+            payload = json.loads(request.body.decode('utf-8'))
+        else:
+            payload = {
+                'message': request.POST.get('message', ''),
+                'session_id': request.POST.get('session_id', ''),
+                'language': request.POST.get('language', ''),
+                'visitor_role': request.POST.get('visitor_role', ''),
+            }
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON body.'}, status=400)
+
+    # Input length bound to prevent token exhaustion / DOS
+    user_msg = str(payload.get('message', '')).strip()
+    if len(user_msg) > 600:
+        return JsonResponse({
+            'message': "Your message is too long. Please keep questions under 600 characters.",
+            'error': "Max length exceeded"
+        }, status=400)
+
+    ai_service_url = getattr(settings, 'AI_SERVICE_URL', 'https://ai-portfolio-ai-service.onrender.com').rstrip('/')
+    target_endpoint = f"{ai_service_url}/api/chat"
+    internal_key = getattr(settings, 'AI_SERVICE_INTERNAL_KEY', 'd59e355c3c0a2b0b14467d55ed59e211e40562e8484196144e54823293883bfd')
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Internal-API-Key': internal_key,
+    }
+
+    try:
+        resp = http_requests.post(
+            target_endpoint,
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+        if resp.status_code == 200:
+            return JsonResponse(resp.json(), status=200)
+        else:
+            return JsonResponse({
+                'message': "I'm having a little trouble connecting right now. Please try again in a moment.",
+            }, status=resp.status_code)
+    except http_requests.Timeout:
+        return JsonResponse({
+            'message': "Daisy is taking a moment to wake up on the server. Please send your message again in a few seconds!",
+            'timeout': True,
+        }, status=200)
+    except Exception:
+        return JsonResponse({
+            'message': "Sorry, unable to connect to the AI assistant right now.",
+        }, status=500)
+
 def contact_submit_view(request):
     if request.method == 'POST':
+        client_ip = _get_client_ip(request)
+        if _is_rate_limited(client_ip, _contact_ip_timestamps, max_requests=5, window_seconds=600):
+            messages.error(request, "Too many messages sent. Please wait a few minutes before trying again.")
+            return redirect('portfolio:home')
+
+        # Honeypot spam check (bots fill hidden field)
+        if request.POST.get('website_hp', ''):
+            messages.success(request, "Your message has been sent successfully!")
+            return redirect('portfolio:home')
+
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
         message_text = request.POST.get('message', '').strip()
@@ -149,18 +259,20 @@ def verify_api_key(request, data=None):
     auth_header = request.headers.get('Authorization', '')
     bearer_token = auth_header.replace('Bearer ', '').strip() if auth_header.startswith('Bearer ') else ''
     
+    # Secure header-first API key extraction (query parameters excluded to prevent URL logging leaks)
     provided_key = (
         request.headers.get('X-API-Key')
         or request.headers.get('X-Blog-API-Key')
         or request.META.get('HTTP_X_API_KEY')
         or request.META.get('HTTP_X_BLOG_API_KEY')
         or bearer_token
-        or request.GET.get('api_key')
         or (data.get('api_key') if data and isinstance(data, dict) else None)
     )
     
-    expected_key = getattr(settings, 'UNIVERSAL_API_KEY', '8bb1ff6b2e8d1d6ea291d3f3f21dd505f1d3283d011ccc8b8452791b50fe3294')
-    return provided_key == expected_key
+    expected_key = getattr(settings, 'UNIVERSAL_API_KEY', '')
+    if not provided_key or not expected_key:
+        return False
+    return secrets.compare_digest(str(provided_key), str(expected_key))
 
 
 @csrf_exempt
@@ -169,22 +281,13 @@ def api_create_blog_post(request):
     Webhook API Endpoint for n8n / Telegram automation.
     Accepts JSON payload to create and store blog posts automatically.
     Supports single JSON object or JSON list array.
-    Expected Payload Structure:
-    [
-      {
-        "title": "My first blog",
-        "content": "This is my first blog...",
-        "image_url": "https://res.cloudinary.com/.../detail_img.jpg",
-        "status": "Draft",
-        "author": "Sahil thakur",
-        "source": "Telegram",
-        "category": "Technology",
-        "image_2": "https://res.cloudinary.com/.../card_img.png"
-      }
-    ]
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed. Use POST.'}, status=405)
+
+    client_ip = _get_client_ip(request)
+    if _is_rate_limited(client_ip, _blog_api_ip_timestamps, max_requests=15, window_seconds=60):
+        return JsonResponse({'error': 'Rate limit exceeded. Please slow down.'}, status=429)
 
     try:
         raw_body = json.loads(request.body.decode('utf-8'))

@@ -213,6 +213,21 @@ function removeMeetingUi(bodyEl) {
 }
 
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
 const CHAT_API_URL = window.CHAT_API_URL || '/api/chat/';
 const chatBtn = document.getElementById('chatBtn');
 const chatWindow = document.getElementById('chatWindow');
@@ -266,13 +281,13 @@ function connectWebSocket() {
       const payloadStr = JSON.stringify(payload);
 
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        const csrfToken = getCookie('csrftoken');
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
         const response = await fetch(CHAT_API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Internal-API-Key': 'd59e355c3c0a2b0b14467d55ed59e211e40562e8484196144e54823293883bfd'
-          },
+          headers: headers,
           body: payloadStr
         });
 
@@ -298,8 +313,18 @@ function connectWebSocket() {
         }
 
         let botHtml = responseText || "Hello! I'm Daisy, Sahil's AI assistant.";
-        botHtml = botHtml.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--cyan);text-decoration:underline;font-weight:600;">$1</a>');
+        // 1. Convert Markdown links [Title](/url) or [Title](https://...) to clickable HTML <a> links
+        botHtml = botHtml.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match, text, url) {
+          const isPdf = url.toLowerCase().includes('.pdf');
+          const isExternal = url.startsWith('http') || isPdf;
+          const targetAttr = isExternal ? 'target="_blank"' : 'target="_self"';
+          const icon = isPdf ? '<i class="fa-solid fa-file-pdf" style="margin-right:5px;color:#EF4444;"></i>' : '';
+          return `<a href="${url}" ${targetAttr} style="color:var(--cyan);text-decoration:underline;font-weight:600;">${icon}${text}</a>`;
+        });
+        // 2. Convert standalone HTTP/HTTPS links
         botHtml = botHtml.replace(/(^|[^"'=])(https?:\/\/[^\s<">]+)/g, '$1<a href="$2" target="_blank" style="color:var(--cyan);text-decoration:underline;font-weight:600;">$2</a>');
+        // 3. Fallback: Convert raw text "URL: /blog/slug/" into clickable link
+        botHtml = botHtml.replace(/(URL:\s*)(\/blog\/[a-zA-Z0-9\-_]+\/?)/g, '$1<a href="$2" style="color:var(--cyan);text-decoration:underline;font-weight:600;">$2</a>');
         botHtml = botHtml.replace(/\n/g, '<br>');
 
         const addBotMsg = (bodyEl) => {
@@ -441,11 +466,13 @@ let suggestionInterval = null;
 
 function updateSuggestions() {
   const suggestions = document.getElementById('chatSuggestions');
+  const wrapper = document.getElementById('chatSuggestionsWrapper');
   const fsSuggestions = document.getElementById('chatFsSuggestions');
   if (!suggestions && !fsSuggestions) return;
 
   if (!userLanguage) {
     if (suggestions) suggestions.style.display = 'none';
+    if (wrapper) wrapper.style.display = 'none';
     if (fsSuggestions) fsSuggestions.style.display = 'none';
     return;
   }
@@ -460,20 +487,23 @@ function updateSuggestions() {
   });
 
   if (suggestions) { suggestions.style.display = 'flex'; suggestions.innerHTML = html; }
+  if (wrapper) { wrapper.style.display = 'block'; }
   if (fsSuggestions) { fsSuggestions.style.display = 'flex'; fsSuggestions.innerHTML = html; }
 }
 
 function startSuggestionCycle() {
   if (suggestionInterval) clearInterval(suggestionInterval);
   updateSuggestions();
-  suggestionInterval = setInterval(() => updateSuggestions(), 7000);
+  suggestionInterval = setInterval(() => updateSuggestions(), 3500);
 }
 
 function stopSuggestionCycle() {
   if (suggestionInterval) { clearInterval(suggestionInterval); suggestionInterval = null; }
   const suggestions = document.getElementById('chatSuggestions');
+  const wrapper = document.getElementById('chatSuggestionsWrapper');
   const fsSuggestions = document.getElementById('chatFsSuggestions');
   if (suggestions) suggestions.style.display = 'none';
+  if (wrapper) wrapper.style.display = 'none';
   if (fsSuggestions) fsSuggestions.style.display = 'none';
 }
 
