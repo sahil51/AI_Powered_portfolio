@@ -417,8 +417,12 @@
         <div class="edu-card-top">
           <div class="edu-header-row">
             <div>
-              <div class="edu-badge">
+              <div class="edu-badge {% if edu.education_type == 'School' %}edu-badge-school{% endif %}">
+                {% if edu.education_type == 'School' %}
+                <i class="fa-solid fa-school"></i> School
+                {% else %}
                 <i class="fa-solid fa-graduation-cap"></i> Degree
+                {% endif %}
               </div>
               <div class="edu-inst">{{ edu.institution }}</div>
               <div class="edu-degree">{{ edu.degree }}</div>

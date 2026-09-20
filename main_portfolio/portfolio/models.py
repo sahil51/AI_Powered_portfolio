@@ -91,8 +91,19 @@ class Project(models.Model):
         return f"Project {self.number}: {self.title}"
 
 class Education(models.Model):
+    EDUCATION_TYPE_CHOICES = (
+        ('Degree', 'Degree'),
+        ('School', 'School'),
+    )
     institution = models.CharField(max_length=150)
-    degree = models.CharField(max_length=150)
+    degree = models.CharField(max_length=150, verbose_name="Degree / Class")
+    education_type = models.CharField(
+        max_length=20,
+        choices=EDUCATION_TYPE_CHOICES,
+        default='Degree',
+        verbose_name="Education Type",
+        help_text="Select Degree (College/University) or School (10th/12th)"
+    )
     duration = models.CharField(max_length=100)
     location = models.CharField(max_length=150)
     scores = models.TextField(help_text="Enter scores or details, one per line")
@@ -105,7 +116,7 @@ class Education(models.Model):
         return [line.strip() for line in self.scores.split('\n') if line.strip()]
 
     def __str__(self):
-        return f"{self.degree} at {self.institution}"
+        return f"{self.degree} ({self.education_type}) at {self.institution}"
 
 import re
 

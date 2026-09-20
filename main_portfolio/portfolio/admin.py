@@ -36,7 +36,11 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Education)
 class EducationAdmin(admin.ModelAdmin):
-    list_display = ('institution', 'degree', 'duration')
+    list_display = ('degree', 'institution', 'education_type', 'duration')
+    list_editable = ('education_type',)
+    list_filter = ('education_type',)
+    search_fields = ('institution', 'degree')
+    fields = ('education_type', 'institution', 'degree', 'duration', 'location', 'scores')
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):

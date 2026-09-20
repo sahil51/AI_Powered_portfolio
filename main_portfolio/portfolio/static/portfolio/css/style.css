@@ -1364,6 +1364,12 @@ section {
   margin-bottom: 12px;
 }
 
+.edu-badge.edu-badge-school {
+  color: var(--cyan);
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
 .edu-inst {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 22px;
