@@ -260,8 +260,18 @@
           <h3 class="proj-name" style="margin-bottom: 12px; transition: color 0.2s;">
             {{ proj.title }}
           </h3>
-          <div class="proj-desc">{{ proj.description }}</div>
-          <div class="proj-stack">
+          <div class="proj-desc-wrap">
+            <div class="proj-desc {% if proj.description|length > 170 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
+              {{ proj.description }}
+            </div>
+            {% if proj.description|length > 170 %}
+            <button type="button" class="proj-learn-more-btn" onclick="toggleProjDesc(event, 'proj-desc-{{ forloop.counter }}', this)">
+              <span class="btn-text">Learn More</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            {% endif %}
+          </div>
+          <div class="proj-stack" style="margin-top: auto;">
             {% for tech in proj.get_technologies_list %}
             <span class="proj-tag">{{ tech }}</span>
             {% endfor %}

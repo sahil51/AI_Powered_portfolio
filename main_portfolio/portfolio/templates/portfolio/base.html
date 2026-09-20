@@ -25,42 +25,44 @@
 
   <!-- NAV -->
   <nav id="navbar">
-    <a href="{% url 'portfolio:home' %}" class="nav-logo">
-      {% if hero.logo_image %}
-      <img src="{{ hero.logo_image.url }}" alt="Logo" class="nav-logo-img">
-      {% else %}
-      <div class="nav-logo-badge">ST</div>
-      {% endif %}
-      {% if hero.brand_name %}
-      <span class="nav-logo-text">{{ hero.brand_name }}</span>
-      {% endif %}
-    </a>
-    <ul class="nav-links">
-      <li><a href="{% url 'portfolio:home' %}">Home</a></li>
-      <li><a href="{% url 'portfolio:home' %}#summary">About</a></li>
-      <li><a href="{% url 'portfolio:home' %}#skills">Skills</a></li>
-      <li><a href="{% url 'portfolio:home' %}#experience">Experience</a></li>
-      <li><a href="{% url 'portfolio:home' %}#projects">Projects</a></li>
-      <li><a href="{% url 'portfolio:home' %}#education">Education</a></li>
-      <li><a href="{% url 'portfolio:blog_list' %}">Blog</a></li>
-      {% if user.is_staff %}
-      <li><a href="{% url 'portfolio:visitors' %}">Visitors</a></li>
-      {% endif %}
-      <li><a href="{% url 'portfolio:home' %}#contact">Contact</a></li>
-    </ul>
-    <div class="nav-actions">
-      <a href="https://wa.me/{{ hero.phone|cut:' '|cut:'+' }}" class="nav-cta whatsapp-cta" target="_blank"
-        rel="noopener noreferrer">
-        <i class="fa-brands fa-whatsapp" style="font-size: 15px;"></i>
-        WhatsApp
+    <div class="nav-container">
+      <a href="{% url 'portfolio:home' %}" class="nav-logo">
+        {% if hero.logo_image %}
+        <img src="{{ hero.logo_image.url }}" alt="Logo" class="nav-logo-img">
+        {% else %}
+        <div class="nav-logo-badge">ST</div>
+        {% endif %}
+        {% if hero.brand_name %}
+        <span class="nav-logo-text">{{ hero.brand_name }}</span>
+        {% endif %}
       </a>
-      <a href="#" class="nav-cta ai-cta open-chat"><i class="fa-solid fa-robot" style="font-size: 14px;"></i> Ask AI</a>
-      <a href="mailto:{{ hero.email }}" class="nav-cta"><i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
-        Hire Me</a>
+      <ul class="nav-links">
+        <li><a href="{% url 'portfolio:home' %}">Home</a></li>
+        <li><a href="{% url 'portfolio:home' %}#summary">About</a></li>
+        <li><a href="{% url 'portfolio:home' %}#skills">Skills</a></li>
+        <li><a href="{% url 'portfolio:home' %}#experience">Experience</a></li>
+        <li><a href="{% url 'portfolio:home' %}#projects">Projects</a></li>
+        <li><a href="{% url 'portfolio:home' %}#education">Education</a></li>
+        <li><a href="{% url 'portfolio:blog_list' %}">Blog</a></li>
+        {% if user.is_staff %}
+        <li><a href="{% url 'portfolio:visitors' %}">Visitors</a></li>
+        {% endif %}
+        <li><a href="{% url 'portfolio:home' %}#contact">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="https://wa.me/{{ hero.phone|cut:' '|cut:'+' }}" class="nav-cta whatsapp-cta" target="_blank"
+          rel="noopener noreferrer">
+          <i class="fa-brands fa-whatsapp" style="font-size: 15px;"></i>
+          WhatsApp
+        </a>
+        <a href="#" class="nav-cta ai-cta open-chat"><i class="fa-solid fa-robot" style="font-size: 14px;"></i> Ask AI</a>
+        <a href="mailto:{{ hero.email }}" class="nav-cta"><i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
+          Hire Me</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
   </nav>
 
   <!-- MOBILE MENU -->

@@ -115,7 +115,35 @@ if (termCopyBtn) {
       }, 2500);
     }).catch(() => {});
   });
+// FEATURED PROJECTS - LEARN MORE / COLLAPSE TOGGLE
+function toggleProjDesc(event, descId, btn) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const descEl = document.getElementById(descId);
+  if (!descEl) return;
+  const isExpanded = descEl.classList.contains('expanded');
+  const textSpan = btn.querySelector('.btn-text');
+  const icon = btn.querySelector('i');
+
+  if (isExpanded) {
+    descEl.classList.remove('expanded');
+    if (textSpan) textSpan.textContent = 'Learn More';
+    if (icon) {
+      icon.classList.remove('fa-chevron-up');
+      icon.classList.add('fa-chevron-down');
+    }
+  } else {
+    descEl.classList.add('expanded');
+    if (textSpan) textSpan.textContent = 'Show Less';
+    if (icon) {
+      icon.classList.remove('fa-chevron-down');
+      icon.classList.add('fa-chevron-up');
+    }
+  }
 }
+window.toggleProjDesc = toggleProjDesc;
 
 // PROACTIVE AI THOUGHT BUBBLE NUDGE
 setTimeout(() => {
