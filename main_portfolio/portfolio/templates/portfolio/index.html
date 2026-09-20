@@ -112,17 +112,10 @@
           <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">role</span> = <span class="t-s">"{{ hero.role }}"</span></div>
           <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">location</span> = <span class="t-s">"{{ hero.location }}"</span></div>
           <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">company</span> = <span class="t-s">"{{ hero.current_company }}"</span></div>
-          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">stack</span> = [</div>
-          {% for tech in hero.get_tech_stack_list %}
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-s">"{{ tech }}"</span>{% if not forloop.last %},{% endif %}</div>
-          {% endfor %}
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;]</div>
-          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">ai_expertise</span> = [</div>
-          {% for exp in hero.get_ai_expertise_list %}
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-s">"{{ exp }}"</span>{% if not forloop.last %},{% endif %}</div>
-          {% endfor %}
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;]</div>
+          <div class="tl" style="margin-top:10px; line-height: 1.7;">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">stack</span> = [{% for tech in hero.get_tech_stack_list %}<span class="t-s">"{{ tech }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]</div>
+          <div class="tl" style="margin-top:10px; line-height: 1.7;">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">ai_expertise</span> = [{% for exp in hero.get_ai_expertise_list %}<span class="t-s">"{{ exp }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]</div>
           <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">open_to_work</span> = <span class="t-n">{% if hero.open_to_work %}True{% else %}False{% endif %}</span> <span class="t-c"># ✓</span></div>
+
         </div>
       </div>
     </div>
