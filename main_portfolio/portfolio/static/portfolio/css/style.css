@@ -307,7 +307,7 @@ nav {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 120px 6vw 80px;
+  padding: 120px 4vw 80px;
   position: relative;
   overflow: hidden
 }
@@ -345,11 +345,11 @@ nav {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1.15fr 0.85fr;
   gap: 60px;
   align-items: center;
   width: 100%;
-  max-width: 1440px;
+  max-width: 100%;
   margin: 0 auto;
   position: relative;
   z-index: 1
@@ -436,7 +436,7 @@ h1 {
   color: var(--muted);
   font-size: 17.8px;
   line-height: 1.8;
-  max-width: 500px;
+  max-width: 650px;
   margin-bottom: 32px
 }
 
@@ -617,11 +617,11 @@ h1 {
   background: var(--bg2);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 28px 6vw
+  padding: 28px 4vw
 }
 
 .stats-inner {
-  max-width: 1340px;
+  max-width: 100%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -653,11 +653,11 @@ h1 {
 
 /* SECTIONS */
 section {
-  padding: 56px 6vw
+  padding: 56px 4vw
 }
 
 .section-inner {
-  max-width: 1340px;
+  max-width: 100%;
   margin: 0 auto
 }
 
@@ -2512,7 +2512,7 @@ section {
 /* MARKETING FUNNEL CTA */
 #cta-funnel {
   background: var(--bg);
-  padding: 80px 6vw;
+  padding: 80px 4vw;
 }
 
 .funnel-card {
@@ -2608,7 +2608,7 @@ section {
 #contact {
   background: linear-gradient(135deg, var(--bg) 0%, #E2E8F0 100%);
   text-align: center;
-  padding: 100px 6vw
+  padding: 100px 4vw
 }
 
 .contact-wrap {
@@ -2632,7 +2632,7 @@ section {
 }
 
 .contact-split-container {
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
   width: 100%;
   padding: 0 15px
@@ -2988,7 +2988,7 @@ section {
 /* FOOTER */
 footer {
   text-align: center;
-  padding: 26px;
+  padding: 26px 4vw;
   border-top: 1px solid var(--border);
   font-size: 14.6px;
   color: var(--muted2)
