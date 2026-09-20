@@ -2661,11 +2661,11 @@ section {
 }
 
 .funnel-card {
-  max-width: 1000px;
+  max-width: 1480px;
   margin: 0 auto;
   background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
   border-radius: 24px;
-  padding: 56px 40px;
+  padding: 64px 48px;
   text-align: center;
   color: #FFFFFF;
   box-shadow: 0 20px 40px rgba(124, 58, 237, 0.22);
@@ -2777,7 +2777,7 @@ section {
 }
 
 .contact-split-container {
-  max-width: 1240px;
+  max-width: 1480px;
   margin: 0 auto;
   width: 100%;
   padding: 0 15px
