@@ -71,20 +71,8 @@ def seed_portfolio_data(apps, schema_editor):
     
     # 6. Visitors
     visitors_list = [
-        ("mehak", "fsd", "schedule meeting with sahil", "call", "+91784542345", "+91784542345 tommorow 1pm yess IST"),
-        ("krisha", "r1", "Project Discussion", "offline", "59, Sector 123, Gurugram, Haryana, 122001, India", "29 June 2026, 04:00 AM IST"),
-        ("isha", "tech mahindara", "job interview", "offline", "56, Sector 12, Gurugram, Haryana, 122001, India", "29 June 2026, 02:00 PM IST"),
-        ("isha", "tech mahindara", "job interview", "offline", "56, Sector 12, Gurugram, Haryana, 122001, India", "29 June 2026, 04:00 PM IST"),
-        ("muskan", "raw texrt one", "project descussion", "online", "Google Meet", "29 June 2026, 06:00 AM IST"),
-        ("guddi", "zeta 56", "project descussion", "online", "Google Meet", "continue my company name zeta 56, Sector 12, Gurugram, Haryana, 122001, India on IST"),
-        ("Mohit Malhotra", "Acme Corp", "Technical Discussion", "online", "online", "Monday, 29 June 2026, 04:00 PM IST"),
-        ("sourb", "tytech", "schedule meeting", "offline", "56, Sector 12, Gurugram, Haryana, 122001, India", "My Address 56, Sector 12, Gurugram, Haryana, 122001, India IST"),
-        ("vikas", "ty tech", "schedule meeting with Sahil", "call", "+9145788956", "29 June 2026, 04:00 PM IST"),
-        ("Mohit", "dftech", "Schedule meeting with Sahil", "online", "Google Meet", "29 June 2026, 05:00 PM IST"),
-        ("Mohit", "dftech", "Schedule meeting with Sahil", "online", "Google Meet", "29 June 2026, 05:00 PM IST"),
-        ("mohit", "dftech", "Schedule meeting with Sahil", "online", "Google Meet", "29 June 2026, 05:00 PM IST"),
-        ("Harsh", "Zens", "Schedule meeting with Sahil", "online", "Google Meet", "name is Zens address is 56mall road, ambala cantt, haryana ,india address is 56m IST"),
-        ("megha", "megha tech copr", "Schedule Interview", "online", "Google Meet", "29 June 2026, 09:00 PM IST"),
+        ("Vikram Mehta", "Nexus Cloud Labs", "Discuss Full-Stack AI Engineer contract for enterprise automation pipeline", "online", "Google Meet", "Next Wednesday, 4:00 PM IST"),
+        ("Pooja Sharma", "Apex Talent Acquisition", "Technical Interview discussion for Senior Backend & AI Engineer role", "call", "+91 98765 43210", "Friday, 2:30 PM IST"),
     ]
     for name, comp, purp, conn_type, detail, timing in visitors_list:
         Visitor.objects.create(
@@ -95,6 +83,7 @@ def seed_portfolio_data(apps, schema_editor):
             connection_info_detail=detail,
             timing=timing
         )
+
 
 def rollback_seed_data(apps, schema_editor):
     TypedRole = apps.get_model('portfolio', 'TypedRole')
