@@ -115,6 +115,8 @@ if (termCopyBtn) {
       }, 2500);
     }).catch(() => {});
   });
+}
+
 // FEATURED PROJECTS - LEARN MORE / COLLAPSE TOGGLE
 function toggleProjDesc(event, descId, btn) {
   if (event) {
