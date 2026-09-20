@@ -83,12 +83,13 @@
       <div class="role-line"><span id="typed-role"></span><span class="cursor-blink"></span></div>
       <p class="hero-desc">{{ hero.short_intro }}</p>
       <div class="btn-row">
-        <a href="mailto:{{ hero.email }}" class="btn btn-primary">✉ Get in Touch</a>
+        <a href="mailto:{{ hero.email }}" class="btn btn-primary"><i class="fa-regular fa-envelope" style="margin-right: 6px;"></i>Get in Touch</a>
         <a href="#projects" class="btn btn-ghost">View Projects</a>
         {% if hero.resume %}
-        <a href="{{ hero.resume.url }}" class="btn btn-ghost" target="_blank" download>📄 Download CV</a>
+        <a href="{{ hero.resume.url }}" class="btn btn-ghost" target="_blank" download><i class="fa-regular fa-file-pdf" style="margin-right: 6px;"></i>Download CV</a>
         {% endif %}
       </div>
+
       <div class="hero-socials">
         <a href="{{ hero.linkedin_url }}" class="social-link" target="_blank" rel="noopener">LinkedIn</a>
         <a href="{{ hero.github_url }}" class="social-link" target="_blank" rel="noopener">GitHub</a>
@@ -188,16 +189,17 @@
       <div class="exp-header">
         <div>
           <div class="exp-company">{{ exp.company }}</div>
-          <div class="exp-location">📍 {{ exp.location }}</div>
-          <div class="exp-role">⚡ {{ exp.role }}</div>
+          <div class="exp-location"><i class="fa-solid fa-location-dot" style="margin-right: 6px; color: var(--cyan);"></i>{{ exp.location }}</div>
+          <div class="exp-role"><i class="fa-solid fa-briefcase" style="font-size: 13px;"></i>{{ exp.role }}</div>
         </div>
         <div class="exp-date">
           {% if exp.is_present %}
-          <div class="badge">● Present</div>
+          <div class="badge">Present</div>
           {% endif %}
           <div>{{ exp.start_date }} — {{ exp.end_date }}</div>
         </div>
       </div>
+
 
       <p class="exp-intro">{{ exp.intro }}</p>
 
