@@ -246,40 +246,45 @@
       <div class="proj-card reveal">
       {% endif %}
         <div class="proj-content">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
-            <div class="proj-number">PROJECT — {{ proj.number|stringformat:"02d" }}</div>
-            {% if proj.blog_post %}
-            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--purple); background: rgba(124, 58, 237, 0.08); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(124, 58, 237, 0.25); text-transform: uppercase; letter-spacing: 0.5px;">
-              <i class="fa-solid fa-book-open" style="margin-right: 4px;"></i>CASE STUDY
-            </span>
-            {% endif %}
+          <div class="proj-header-row">
+            <div class="proj-icon-box">
+              <i class="{{ proj.icon_class }}"></i>
+            </div>
+            <div class="proj-header-meta">
+              {% if proj.blog_post %}
+              <span class="proj-case-badge">
+                <i class="fa-solid fa-book-open"></i>Case Study
+              </span>
+              {% endif %}
+              <span class="proj-badge">#{{ proj.number|stringformat:"02d" }}</span>
+            </div>
           </div>
-          <div class="proj-icon">
-            <i class="{{ proj.icon_class }}"></i>
-          </div>
-          <h3 class="proj-name" style="margin-bottom: 12px; transition: color 0.2s;">
+
+          <h3 class="proj-name">
             {{ proj.title }}
           </h3>
+
           <div class="proj-desc-wrap">
-            <div class="proj-desc {% if proj.description|length > 170 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
+            <div class="proj-desc {% if proj.description|length > 320 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
               {{ proj.description }}
             </div>
-            {% if proj.description|length > 170 %}
+            {% if proj.description|length > 320 %}
             <button type="button" class="proj-learn-more-btn" onclick="toggleProjDesc(event, 'proj-desc-{{ forloop.counter }}', this)">
               <span class="btn-text">Learn More</span>
               <i class="fa-solid fa-chevron-down"></i>
             </button>
             {% endif %}
           </div>
-          <div class="proj-stack" style="margin-top: auto;">
+
+          <div class="proj-stack">
             {% for tech in proj.get_technologies_list %}
             <span class="proj-tag">{{ tech }}</span>
             {% endfor %}
           </div>
 
           {% if proj.get_project_url != '#' %}
-          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #F1F5F9; display: flex; justify-content: flex-end; align-items: center;">
-            <span class="proj-read-link" style="font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--cyan); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+          <div class="proj-footer">
+            <span class="proj-read-link">
               {% if proj.blog_post %}
               Read Article <i class="fa-solid fa-arrow-right-long"></i>
               {% else %}
