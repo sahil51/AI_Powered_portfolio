@@ -96,8 +96,33 @@
   {% block content %}{% endblock %}
 
   <!-- FOOTER -->
-  <footer>
-    <span style="color:var(--cyan); font-weight:600;">{% if hero.brand_name %}{{ hero.brand_name }}{% else %}{{ hero.name }}{% endif %}</span> &nbsp;·&nbsp; {{ hero.role }} &nbsp;·&nbsp; {{ hero.location }} &nbsp;·&nbsp; {{ hero.email }}
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-quote-wrap">
+        <div class="footer-quote-icon"><i class="fa-solid fa-terminal"></i></div>
+        <p class="footer-quote-text">
+          “Architecting resilient backends, scalable pipelines & autonomous AI intelligence.”
+        </p>
+        <span class="footer-quote-sub">From first principles to production-grade systems.</span>
+      </div>
+
+      <div class="footer-divider"></div>
+
+      <div class="footer-bottom-row">
+        <div class="footer-status">
+          <span class="footer-status-dot"></span>
+          <span>Available for innovative AI &amp; Backend engineering roles</span>
+        </div>
+
+        <div class="footer-copy">
+          Designed &amp; Engineered with <span class="heart-pulse">❤️</span> by <strong style="color: #0F172A;">Sahil Thakur</strong> &nbsp;·&nbsp; © 2026
+        </div>
+
+        <button type="button" class="back-to-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" aria-label="Back to top">
+          Back to top <i class="fa-solid fa-arrow-up"></i>
+        </button>
+      </div>
+    </div>
   </footer>
 
   <!-- THOUGHT BUBBLE -->
