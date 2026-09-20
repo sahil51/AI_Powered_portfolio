@@ -42,6 +42,7 @@
         <li><a href="{% url 'portfolio:home' %}#skills">Skills</a></li>
         <li><a href="{% url 'portfolio:home' %}#experience">Experience</a></li>
         <li><a href="{% url 'portfolio:home' %}#projects">Projects</a></li>
+        <li><a href="{% url 'portfolio:home' %}#workflows">Workflows</a></li>
         <li><a href="{% url 'portfolio:home' %}#education">Education</a></li>
         <li><a href="{% url 'portfolio:blog_list' %}">Blog</a></li>
         {% if user.is_staff %}
@@ -73,6 +74,7 @@
     <a href="{% url 'portfolio:home' %}#skills" class="mm-link">Skills</a>
     <a href="{% url 'portfolio:home' %}#experience" class="mm-link">Experience</a>
     <a href="{% url 'portfolio:home' %}#projects" class="mm-link">Projects</a>
+    <a href="{% url 'portfolio:home' %}#workflows" class="mm-link">Workflows</a>
     <a href="{% url 'portfolio:home' %}#education" class="mm-link">Education</a>
     <a href="{% url 'portfolio:blog_list' %}" class="mm-link">Blog</a>
     {% if user.is_staff %}

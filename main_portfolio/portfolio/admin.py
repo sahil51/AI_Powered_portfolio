@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo, ContactMethod
+from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo, ContactMethod, AutomationWorkflow, WorkflowImage
 
 
 
@@ -33,6 +33,41 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('blog_post',)
     search_fields = ('title', 'description', 'technologies')
     ordering = ('number',)
+
+class WorkflowImageInline(admin.TabularInline):
+    model = WorkflowImage
+    extra = 1
+    fields = ('image', 'image_url', 'caption', 'order', 'preview')
+    readonly_fields = ('preview',)
+
+    def preview(self, obj):
+        url = obj.get_image_url()
+        if url:
+            return format_html('<img src="{}" style="height: 45px; border-radius: 6px; object-fit: cover; max-width: 80px;" />', url)
+        return "-"
+    preview.short_description = "Preview"
+
+@admin.register(AutomationWorkflow)
+class AutomationWorkflowAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'order', 'image_count', 'created_at')
+    list_editable = ('order',)
+    list_filter = ('category',)
+    search_fields = ('title', 'description', 'technologies', 'category')
+    inlines = [WorkflowImageInline]
+    fieldsets = (
+        ('General Info', {
+            'fields': ('order', 'title', 'category', 'icon_class', 'link')
+        }),
+        ('Workflow Content', {
+            'fields': ('description', 'technologies'),
+            'description': 'Explain the trigger, automated processing nodes, and business outcome.'
+        }),
+    )
+
+    def image_count(self, obj):
+        count = obj.images.count()
+        return format_html('<span class="badge badge-info" style="font-weight: 600; padding: 4px 8px;">{} image(s)</span>', count)
+    image_count.short_description = "Images"
 
 @admin.register(Education)
 class EducationAdmin(admin.ModelAdmin):

@@ -311,6 +311,119 @@
   </div>
 </section>
 
+<!-- AUTOMATION WORKFLOWS -->
+<section id="workflows">
+  <!-- Glow Blobs -->
+  <div class="blob" style="width: 480px; height: 480px; background: rgba(37, 99, 235, 0.035); top: -120px; right: -80px; position: absolute; pointer-events: none;"></div>
+  <div class="blob" style="width: 380px; height: 380px; background: rgba(124, 58, 237, 0.03); bottom: -90px; left: -60px; position: absolute; pointer-events: none;"></div>
+
+  <div class="section-inner" style="position: relative; z-index: 1;">
+    <div class="section-label reveal" style="display: inline-flex; align-items: center; gap: 8px;">
+      <i class="fa-solid fa-gears" style="color: var(--cyan);"></i> Automations &amp; Pipelines
+    </div>
+    <h2 class="section-title reveal">Automated <span>Workflows</span></h2>
+    <p class="reveal" style="max-width: 680px; color: #64748B; font-size: 15.5px; line-height: 1.6; margin-top: -12px; margin-bottom: 24px;">
+      End-to-end automated pipelines, n8n orchestrations, and autonomous AI agent workflows designed to streamline operations and eliminate repetitive tasks.
+    </p>
+
+    <div class="workflows-grid">
+      {% for wf in workflows %}
+      <div class="wf-card reveal" id="wf-card-{{ wf.id }}">
+        
+        <!-- Multi-Image Carousel / Viewer -->
+        {% if wf.images.all %}
+        <div class="wf-carousel" id="wf-carousel-{{ wf.id }}">
+          <div class="wf-zoom-hint">
+            <i class="fa-solid fa-expand"></i> Click to Zoom
+          </div>
+          
+          {% if wf.images.count > 1 %}
+          <div class="wf-counter-badge" id="wf-counter-{{ wf.id }}">
+            <i class="fa-regular fa-images"></i> <span class="current-slide">1</span> / {{ wf.images.count }}
+          </div>
+          {% endif %}
+
+          <div class="wf-track" id="wf-track-{{ wf.id }}" data-current="0" data-total="{{ wf.images.count }}">
+            {% for img in wf.images.all %}
+            <div class="wf-slide" onclick="openWfLightbox('{{ wf.id }}', {{ forloop.counter0 }})">
+              <img src="{{ img.get_image_url }}" alt="{{ img.caption|default:wf.title }}" loading="lazy" />
+            </div>
+            {% endfor %}
+          </div>
+
+          {% if wf.images.count > 1 %}
+          <button type="button" class="wf-nav-btn wf-prev" aria-label="Previous image" onclick="prevWfSlide(event, '{{ wf.id }}')">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button type="button" class="wf-nav-btn wf-next" aria-label="Next image" onclick="nextWfSlide(event, '{{ wf.id }}')">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+
+          <div class="wf-dots" id="wf-dots-{{ wf.id }}">
+            {% for img in wf.images.all %}
+            <span class="wf-dot {% if forloop.first %}active{% endif %}" onclick="goToWfSlide(event, '{{ wf.id }}', {{ forloop.counter0 }})"></span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Card Body -->
+        <div class="wf-body">
+          <div>
+            <div class="wf-meta-row">
+              <span class="wf-cat-pill">
+                <i class="{{ wf.icon_class }}"></i> {{ wf.category }}
+              </span>
+              <span class="wf-num-badge">#0{{ wf.order }}</span>
+            </div>
+
+            <h3 class="wf-title">{{ wf.title }}</h3>
+
+            <div class="wf-desc-wrap">
+              <div class="wf-desc {% if wf.description|length > 200 %}collapsible{% endif %}" id="wf-desc-{{ wf.id }}">
+                {{ wf.description }}
+              </div>
+              {% if wf.description|length > 200 %}
+              <button type="button" class="wf-learn-more-btn" onclick="toggleWfDesc(event, 'wf-desc-{{ wf.id }}', this)">
+                <span class="btn-text">Learn More</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              {% endif %}
+            </div>
+          </div>
+
+          <div>
+            <div class="wf-tech-stack">
+              {% for tech in wf.get_technologies_list %}
+              <span class="wf-tech-tag">{{ tech }}</span>
+              {% endfor %}
+            </div>
+
+            <div class="wf-footer-row">
+              {% if wf.images.all %}
+              <button type="button" class="wf-view-gallery-btn" onclick="openWfLightbox('{{ wf.id }}', 0)">
+                <i class="fa-regular fa-image"></i> View Diagram{% if wf.images.count > 1 %}s ({{ wf.images.count }}){% endif %}
+              </button>
+              {% else %}
+              <span></span>
+              {% endif %}
+
+              {% if wf.link %}
+              <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-demo-link">
+                View Workflow <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
 <!-- BLOGS (LATEST 3) -->
 <section id="blogs" style="padding: 56px 6vw 44px; background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; overflow: hidden;">
   <!-- Background Grid Lines & Glow Blobs (Hero Section Theme) -->
@@ -605,5 +718,160 @@
       });
     }
   });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WORKFLOWS MULTI-IMAGE CAROUSEL & LIGHTBOX
+  // ═══════════════════════════════════════════════════════════════════════════
+  const workflowGalleries = {
+    {% for wf in workflows %}
+    "{{ wf.id }}": [
+      {% for img in wf.images.all %}
+      {
+        url: "{{ img.get_image_url }}",
+        caption: "{{ img.caption|default:wf.title|escapejs }}"
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function goToWfSlide(e, wfId, idx) {
+    if (e) e.stopPropagation();
+    const track = document.getElementById('wf-track-' + wfId);
+    const dots = document.getElementById('wf-dots-' + wfId);
+    const counter = document.getElementById('wf-counter-' + wfId);
+    if (!track) return;
+    const total = parseInt(track.getAttribute('data-total') || '1');
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    track.setAttribute('data-current', idx);
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    if (dots) {
+      Array.from(dots.children).forEach((dot, i) => {
+        dot.classList.toggle('active', i === idx);
+      });
+    }
+    if (counter) {
+      const curSpan = counter.querySelector('.current-slide');
+      if (curSpan) curSpan.textContent = idx + 1;
+    }
+  }
+
+  function nextWfSlide(e, wfId) {
+    if (e) e.stopPropagation();
+    const track = document.getElementById('wf-track-' + wfId);
+    if (!track) return;
+    const cur = parseInt(track.getAttribute('data-current') || '0');
+    goToWfSlide(e, wfId, cur + 1);
+  }
+
+  function prevWfSlide(e, wfId) {
+    if (e) e.stopPropagation();
+    const track = document.getElementById('wf-track-' + wfId);
+    if (!track) return;
+    const cur = parseInt(track.getAttribute('data-current') || '0');
+    goToWfSlide(e, wfId, cur - 1);
+  }
+
+  function toggleWfDesc(e, id, btn) {
+    if (e) e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('expanded');
+    const span = btn.querySelector('.btn-text');
+    const icon = btn.querySelector('i');
+    if (el.classList.contains('expanded')) {
+      if (span) span.textContent = 'Show Less';
+      if (icon) icon.className = 'fa-solid fa-chevron-up';
+    } else {
+      if (span) span.textContent = 'Learn More';
+      if (icon) icon.className = 'fa-solid fa-chevron-down';
+    }
+  }
+
+  let currentLightboxGallery = [];
+  let currentLightboxIndex = 0;
+
+  function openWfLightbox(wfId, idx) {
+    const gallery = workflowGalleries[wfId];
+    if (!gallery || gallery.length === 0) return;
+    currentLightboxGallery = gallery;
+    currentLightboxIndex = idx || 0;
+    updateLightboxView();
+    const lb = document.getElementById('wfLightbox');
+    if (lb) lb.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeWfLightbox(e) {
+    if (e && e.target !== e.currentTarget && !e.target.closest('.wf-lightbox-close')) return;
+    const lb = document.getElementById('wfLightbox');
+    if (lb) lb.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function updateLightboxView() {
+    if (!currentLightboxGallery.length) return;
+    const item = currentLightboxGallery[currentLightboxIndex];
+    const img = document.getElementById('wfLightboxImg');
+    const caption = document.getElementById('wfLightboxCaption');
+    const prevBtn = document.querySelector('.wf-lightbox-prev');
+    const nextBtn = document.querySelector('.wf-lightbox-next');
+    if (img) img.src = item.url;
+    if (caption) {
+      caption.textContent = item.caption + (currentLightboxGallery.length > 1 ? ` (${currentLightboxIndex + 1}/${currentLightboxGallery.length})` : '');
+    }
+    if (prevBtn && nextBtn) {
+      if (currentLightboxGallery.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+      } else {
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
+      }
+    }
+  }
+
+  function lightboxPrev(e) {
+    if (e) e.stopPropagation();
+    if (currentLightboxGallery.length <= 1) return;
+    currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxGallery.length) % currentLightboxGallery.length;
+    updateLightboxView();
+  }
+
+  function lightboxNext(e) {
+    if (e) e.stopPropagation();
+    if (currentLightboxGallery.length <= 1) return;
+    currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxGallery.length;
+    updateLightboxView();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const lb = document.getElementById('wfLightbox');
+    if (lb && lb.classList.contains('active')) {
+      if (e.key === 'Escape') closeWfLightbox();
+      if (e.key === 'ArrowLeft') lightboxPrev();
+      if (e.key === 'ArrowRight') lightboxNext();
+    }
+  });
 </script>
+
+<!-- WORKFLOW FULLSCREEN LIGHTBOX -->
+<div id="wfLightbox" class="wf-lightbox" onclick="closeWfLightbox(event)">
+  <div class="wf-lightbox-dialog" onclick="event.stopPropagation()">
+    <button type="button" class="wf-lightbox-close" onclick="closeWfLightbox()" aria-label="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="wf-lightbox-img-wrap">
+      <button type="button" class="wf-lightbox-nav wf-lightbox-prev" onclick="lightboxPrev(event)" aria-label="Previous">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <img id="wfLightboxImg" class="wf-lightbox-img" src="" alt="Workflow diagram" />
+      <button type="button" class="wf-lightbox-nav wf-lightbox-next" onclick="lightboxNext(event)" aria-label="Next">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+    <div id="wfLightboxCaption" class="wf-lightbox-caption"></div>
+  </div>
+</div>
 {% endblock %}

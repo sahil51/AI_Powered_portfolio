@@ -229,6 +229,7 @@ JAZZMIN_SETTINGS = {
         "portfolio.Skill": "fas fa-tools",
         "portfolio.Experience": "fas fa-briefcase",
         "portfolio.Project": "fas fa-laptop-code",
+        "portfolio.AutomationWorkflow": "fas fa-diagram-project",
         "portfolio.Education": "fas fa-graduation-cap",
         "portfolio.BlogPost": "fas fa-newspaper",
         "portfolio.Visitor": "fas fa-calendar-check",

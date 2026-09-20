@@ -10,7 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo
+from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo, AutomationWorkflow
 
 
 def health_check(request):
@@ -59,6 +59,7 @@ def home_view(request):
     skill_categories = SkillCategory.objects.prefetch_related('skills').all()
     experiences = Experience.objects.all().order_by('-start_date')  # Sort appropriately
     projects = Project.objects.all().order_by('number')
+    workflows = AutomationWorkflow.objects.prefetch_related('images').all().order_by('order')
     educations = Education.objects.all()
     
     # Get latest blogs for homepage display if needed (e.g. latest 3)
@@ -70,6 +71,7 @@ def home_view(request):
         'skill_categories': skill_categories,
         'experiences': experiences,
         'projects': projects,
+        'workflows': workflows,
         'educations': educations,
         'latest_blogs': latest_blogs,
     }

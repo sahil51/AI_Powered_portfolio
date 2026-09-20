@@ -90,6 +90,57 @@ class Project(models.Model):
     def __str__(self):
         return f"Project {self.number}: {self.title}"
 
+class AutomationWorkflow(models.Model):
+    title = models.CharField(max_length=180, help_text="Workflow title (e.g. AI Customer Support Escalation Pipeline)")
+    category = models.CharField(max_length=100, default='n8n Automation', help_text="Category/Type (e.g. n8n Automation, AI Agent, CRM Sync)")
+    description = models.TextField(help_text="Detailed description of the workflow triggers, steps, and outcomes")
+    technologies = models.CharField(max_length=255, help_text="Comma-separated tools/tech (e.g. n8n, OpenAI, Slack, Webhooks)")
+    icon_class = models.CharField(max_length=100, default='fa-solid fa-diagram-project', help_text="FontAwesome icon class")
+    link = models.URLField(blank=True, null=True, help_text="External URL, live demo, or GitHub repository")
+    order = models.IntegerField(default=1, help_text="Display order sequence")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Automation Workflow"
+        verbose_name_plural = "Automation Workflows"
+        ordering = ['order', '-created_at']
+
+    def get_technologies_list(self):
+        return [tag.strip() for tag in self.technologies.split(',') if tag.strip()]
+
+    def get_primary_image_url(self):
+        first_img = self.images.all().first()
+        if first_img:
+            return first_img.get_image_url()
+        return None
+
+    def __str__(self):
+        return f"Workflow #{self.order}: {self.title}"
+
+class WorkflowImage(models.Model):
+    workflow = models.ForeignKey(AutomationWorkflow, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='workflows/', blank=True, null=True, help_text="Upload workflow screenshot or diagram")
+    image_url = models.URLField(max_length=500, blank=True, null=True, help_text="Or external image URL (e.g. Imgur, Cloudinary, AWS)")
+    caption = models.CharField(max_length=200, blank=True, help_text="Optional caption (e.g. Node Execution Flow, Trigger Setup)")
+    order = models.PositiveIntegerField(default=0, help_text="Display order of this image within the workflow card")
+
+    class Meta:
+        verbose_name = "Workflow Image"
+        verbose_name_plural = "Workflow Images"
+        ordering = ['order', 'id']
+
+    def get_image_url(self):
+        if self.image:
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        return self.image_url or ''
+
+    def __str__(self):
+        return f"Image for {self.workflow.title} ({self.caption or f'Image #{self.order}'})"
+
+
 class Education(models.Model):
     EDUCATION_TYPE_CHOICES = (
         ('Degree', 'Degree'),
