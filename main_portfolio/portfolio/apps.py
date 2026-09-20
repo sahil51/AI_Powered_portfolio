@@ -7,3 +7,9 @@ class PortfolioConfig(AppConfig):
 
     def ready(self):
         import portfolio.signals  # noqa
+        try:
+            from .keep_alive import start_keep_alive
+            start_keep_alive()
+        except Exception as e:
+            print(f"[Keep-Alive Setup Notice]: {e}")
+

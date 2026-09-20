@@ -4,13 +4,19 @@ import secrets
 from collections import defaultdict
 import requests as http_requests
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import TypedRole, SkillCategory, Skill, Experience, Project, Education, BlogPost, Visitor, ContactMessage, HeroInfo
+
+
+def health_check(request):
+    """Ultra-fast, zero-overhead health check endpoint for keep-alive pings and uptime monitors."""
+    return HttpResponse("ok", content_type="text/plain", status=200)
+
 
 # ── Security & Rate Limiting (In-Memory IP Bucket) ──────────────────────────
 _chat_ip_timestamps = defaultdict(list)
