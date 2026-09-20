@@ -47,9 +47,14 @@ def home_view(request):
         hero = HeroInfo.objects.create()
 
     roles = [role.name for role in TypedRole.objects.all()]
+    # If a primary role is configured on HeroInfo, ensure it is included first
+    if hero and hero.role and hero.role.strip() and hero.role.strip() not in roles:
+        roles.insert(0, hero.role.strip())
+
     # Fallback default if DB is empty
     if not roles:
-        roles = ["Backend Engineer", "AI Engineer", "Full Stack Developer"]
+        roles = [getattr(hero, 'role', '') or "Backend & AI Developer"]
+
         
     skill_categories = SkillCategory.objects.prefetch_related('skills').all()
     experiences = Experience.objects.all().order_by('-start_date')  # Sort appropriately

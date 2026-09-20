@@ -194,7 +194,11 @@
 
   <script>
     window.CHAT_API_URL = "{{ chat_api_url }}";
+    {% if roles %}
+    window.TYPED_ROLES = {{ roles|safe }};
+    {% endif %}
   </script>
+  {% block pre_js %}{% endblock %}
   <script src="{% static 'portfolio/js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>

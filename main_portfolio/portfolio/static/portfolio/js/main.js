@@ -2,24 +2,43 @@
    PORTFOLIO — MAIN.JS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-// TYPED ROLES — roles array is injected from Django template via window.TYPED_ROLES
-const roles = window.TYPED_ROLES || ['Backend Engineer'];
+// TYPED ROLES — dynamically fetched from Django via window.TYPED_ROLES
 let ri = 0, ci = 0, deleting = false;
 const el = document.getElementById('typed-role');
 
+function getActiveRoles() {
+  if (Array.isArray(window.TYPED_ROLES) && window.TYPED_ROLES.length > 0) {
+    return window.TYPED_ROLES;
+  }
+  return ['Backend & AI Developer'];
+}
+
 function type() {
   if (!el) return;
-  const cur = roles[ri];
+  const currentRoles = getActiveRoles();
+  const cur = currentRoles[ri % currentRoles.length] || '';
   if (!deleting) {
     el.textContent = cur.slice(0, ++ci);
-    if (ci === cur.length) { deleting = true; return setTimeout(type, 2000); }
+    if (ci >= cur.length) { deleting = true; return setTimeout(type, 2000); }
   } else {
     el.textContent = cur.slice(0, --ci);
-    if (ci === 0) { deleting = false; ri = (ri + 1) % roles.length; return setTimeout(type, 400); }
+    if (ci <= 0) {
+      deleting = false;
+      ci = 0;
+      ri = (ri + 1) % currentRoles.length;
+      return setTimeout(type, 400);
+    }
   }
   setTimeout(type, deleting ? 38 : 72);
 }
-type();
+
+// Start typing animation once DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', type);
+} else {
+  type();
+}
+
 
 // SCROLL REVEAL
 const obs = new IntersectionObserver((entries) => {
