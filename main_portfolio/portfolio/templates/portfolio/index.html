@@ -240,14 +240,10 @@
     <h2 class="section-title reveal">Featured <span>Projects</span></h2>
     <div class="projects-grid">
       {% for proj in projects %}
-      {% if proj.get_project_url != '#' %}
-      <a href="{{ proj.get_project_url }}" class="proj-card reveal" style="text-decoration: none; color: inherit; display: flex; cursor: pointer;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
-      {% else %}
-      <div class="proj-card reveal">
-      {% endif %}
+      <div class="proj-card reveal" id="proj-card-{{ proj.id }}">
         <div class="proj-content">
           <div class="proj-header-row">
-            <div class="proj-icon-box">
+            <div class="proj-icon-box" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;" title="Click to view details">
               <i class="{{ proj.icon_class }}"></i>
             </div>
             <div class="proj-header-meta">
@@ -260,20 +256,18 @@
             </div>
           </div>
 
-          <h3 class="proj-name">
+          <h3 class="proj-name" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;" title="Click to view full details">
             {{ proj.title }}
           </h3>
 
           <div class="proj-desc-wrap">
-            <div class="proj-desc {% if proj.description|length > 320 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
+            <div class="proj-desc collapsible" id="proj-desc-{{ forloop.counter }}">
               {{ proj.description }}
             </div>
-            {% if proj.description|length > 320 %}
-            <button type="button" class="proj-learn-more-btn" onclick="toggleProjDesc(event, 'proj-desc-{{ forloop.counter }}', this)">
+            <button type="button" class="proj-learn-more-btn" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
+              <i class="fa-regular fa-eye"></i>
               <span class="btn-text">Learn More</span>
-              <i class="fa-solid fa-chevron-down"></i>
             </button>
-            {% endif %}
           </div>
 
           <div class="proj-stack">
@@ -282,23 +276,22 @@
             {% endfor %}
           </div>
 
-          {% if proj.get_project_url != '#' %}
           <div class="proj-footer">
-            <span class="proj-read-link">
+            <button type="button" class="proj-modal-trigger-link" onclick="openProjModal(event, '{{ proj.id }}')">
+              <i class="fa-regular fa-file-lines"></i> Full Details
+            </button>
+            {% if proj.get_project_url != '#' %}
+            <a href="{{ proj.get_project_url }}" class="proj-read-link" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
               {% if proj.blog_post %}
               Read Article <i class="fa-solid fa-arrow-right-long"></i>
               {% else %}
               View Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
               {% endif %}
-            </span>
+            </a>
+            {% endif %}
           </div>
-          {% endif %}
         </div>
-      {% if proj.get_project_url != '#' %}
-      </a>
-      {% else %}
       </div>
-      {% endif %}
       {% endfor %}
     </div>
 
@@ -378,18 +371,18 @@
               <span class="wf-num-badge">#0{{ wf.order }}</span>
             </div>
 
-            <h3 class="wf-title">{{ wf.title }}</h3>
+            <h3 class="wf-title" onclick="openWfModal(event, '{{ wf.id }}')" style="cursor: pointer;" title="Click to view full details">
+              {{ wf.title }}
+            </h3>
 
             <div class="wf-desc-wrap">
-              <div class="wf-desc {% if wf.description|length > 200 %}collapsible{% endif %}" id="wf-desc-{{ wf.id }}">
+              <div class="wf-desc collapsible" id="wf-desc-{{ wf.id }}">
                 {{ wf.description }}
               </div>
-              {% if wf.description|length > 200 %}
-              <button type="button" class="wf-learn-more-btn" onclick="toggleWfDesc(event, 'wf-desc-{{ wf.id }}', this)">
+              <button type="button" class="wf-learn-more-btn" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
+                <i class="fa-regular fa-eye"></i>
                 <span class="btn-text">Learn More</span>
-                <i class="fa-solid fa-chevron-down"></i>
               </button>
-              {% endif %}
             </div>
           </div>
 
@@ -401,13 +394,9 @@
             </div>
 
             <div class="wf-footer-row">
-              {% if wf.images.all %}
-              <button type="button" class="wf-view-gallery-btn" onclick="openWfLightbox('{{ wf.id }}', 0)">
-                <i class="fa-regular fa-image"></i> View Diagram{% if wf.images.count > 1 %}s ({{ wf.images.count }}){% endif %}
+              <button type="button" class="wf-view-gallery-btn" onclick="openWfModal(event, '{{ wf.id }}')">
+                <i class="fa-regular fa-file-lines"></i> View Full Details
               </button>
-              {% else %}
-              <span></span>
-              {% endif %}
 
               {% if wf.link %}
               <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-demo-link">
@@ -854,7 +843,370 @@
       if (e.key === 'ArrowRight') lightboxNext();
     }
   });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PROJECTS DETAIL POPUP MODAL LOGIC
+  // ═══════════════════════════════════════════════════════════════════════════
+  const allProjectsData = {
+    {% for proj in projects %}
+    "{{ proj.id }}": {
+      number: "{{ proj.number|stringformat:'02d' }}",
+      title: "{{ proj.title|escapejs }}",
+      iconClass: "{{ proj.icon_class }}",
+      description: "{{ proj.description|escapejs }}",
+      technologies: [{% for t in proj.get_technologies_list %}"{{ t|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+      url: "{{ proj.get_project_url }}",
+      isArticle: {% if proj.blog_post %}true{% else %}false{% endif %},
+      hasLink: {% if proj.get_project_url != '#' %}true{% else %}false{% endif %}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function openProjModal(e, projId) {
+    if (e) e.stopPropagation();
+    const data = allProjectsData[projId];
+    if (!data) return;
+
+    document.getElementById('projModalNumber').textContent = '#' + data.number;
+    document.getElementById('projModalTitle').textContent = data.title;
+    document.getElementById('projModalDesc').textContent = data.description;
+    document.getElementById('projModalIcon').className = data.iconClass || 'fa-solid fa-rocket';
+
+    // Case badge
+    const caseBadge = document.getElementById('projModalCaseBadge');
+    if (caseBadge) caseBadge.style.display = data.isArticle ? 'inline-flex' : 'none';
+
+    // Tech stack
+    const stackContainer = document.getElementById('projModalStack');
+    stackContainer.innerHTML = '';
+    data.technologies.forEach(tech => {
+      const span = document.createElement('span');
+      span.className = 'modal-tag';
+      span.textContent = tech;
+      stackContainer.appendChild(span);
+    });
+
+    // Action buttons
+    const demoBtn = document.getElementById('projModalDemoBtn');
+    const articleBtn = document.getElementById('projModalArticleBtn');
+    demoBtn.style.display = 'none';
+    articleBtn.style.display = 'none';
+
+    if (data.hasLink) {
+      if (data.isArticle) {
+        articleBtn.href = data.url;
+        articleBtn.style.display = 'inline-flex';
+      } else {
+        demoBtn.href = data.url;
+        demoBtn.style.display = 'inline-flex';
+      }
+    }
+
+    const modal = document.getElementById('projDetailModal');
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeProjModal(e) {
+    if (e && e.target !== e.currentTarget && !e.target.closest('.modal-close-btn') && !e.target.closest('.modal-cancel-btn')) return;
+    const modal = document.getElementById('projDetailModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WORKFLOWS DETAIL POPUP MODAL LOGIC (UPER IMAGE, NICHE SARA CONTENT)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const allWorkflowsData = {
+    {% for wf in workflows %}
+    "{{ wf.id }}": {
+      order: "{{ wf.order|stringformat:'02d' }}",
+      title: "{{ wf.title|escapejs }}",
+      category: "{{ wf.category|escapejs }}",
+      iconClass: "{{ wf.icon_class }}",
+      description: "{{ wf.description|escapejs }}",
+      technologies: [{% for t in wf.get_technologies_list %}"{{ t|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+      link: "{{ wf.link|default:''|escapejs }}",
+      images: [
+        {% for img in wf.images.all %}
+        {
+          url: "{{ img.get_image_url }}",
+          caption: "{{ img.caption|default:wf.title|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  let wfModalImages = [];
+  let wfModalCurIdx = 0;
+
+  function openWfModal(e, wfId) {
+    if (e) e.stopPropagation();
+    const data = allWorkflowsData[wfId];
+    if (!data) return;
+
+    document.getElementById('wfModalOrder').textContent = '#' + data.order;
+    document.getElementById('wfModalCategory').textContent = data.category;
+    document.getElementById('wfModalIcon').className = data.iconClass || 'fa-solid fa-robot';
+    document.getElementById('wfModalTitle').textContent = data.title;
+    document.getElementById('wfModalDesc').textContent = data.description;
+
+    // Tech stack
+    const stackContainer = document.getElementById('wfModalStack');
+    stackContainer.innerHTML = '';
+    data.technologies.forEach(tech => {
+      const span = document.createElement('span');
+      span.className = 'modal-tag';
+      span.textContent = tech;
+      stackContainer.appendChild(span);
+    });
+
+    // Link
+    const demoBtn = document.getElementById('wfModalDemoBtn');
+    if (data.link && data.link.trim() !== '') {
+      demoBtn.href = data.link;
+      demoBtn.style.display = 'inline-flex';
+    } else {
+      demoBtn.style.display = 'none';
+    }
+
+    // Images Carousel (UPER IMAGE)
+    const mediaWrap = document.getElementById('wfModalMedia');
+    const track = document.getElementById('wfModalTrack');
+    const prevBtn = document.querySelector('.wf-modal-prev');
+    const nextBtn = document.querySelector('.wf-modal-next');
+    const counter = document.getElementById('wfModalCounter');
+    const dotsWrap = document.getElementById('wfModalDots');
+    const captionEl = document.getElementById('wfModalCaption');
+
+    wfModalImages = data.images || [];
+    wfModalCurIdx = 0;
+
+    if (wfModalImages.length > 0) {
+      mediaWrap.style.display = 'block';
+      track.innerHTML = '';
+      dotsWrap.innerHTML = '';
+
+      wfModalImages.forEach((img, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'wf-modal-slide';
+        slide.onclick = () => openWfLightbox(wfId, i);
+        slide.title = 'Click to zoom in fullscreen';
+
+        const imageEl = document.createElement('img');
+        imageEl.src = img.url;
+        imageEl.alt = img.caption || data.title;
+        slide.appendChild(imageEl);
+        track.appendChild(slide);
+
+        if (wfModalImages.length > 1) {
+          const dot = document.createElement('span');
+          dot.className = 'wf-modal-dot' + (i === 0 ? ' active' : '');
+          dot.onclick = (evt) => {
+            evt.stopPropagation();
+            goToWfModalSlide(i);
+          };
+          dotsWrap.appendChild(dot);
+        }
+      });
+
+      if (wfModalImages.length > 1) {
+        if (prevBtn) prevBtn.style.display = 'flex';
+        if (nextBtn) nextBtn.style.display = 'flex';
+        if (counter) {
+          counter.style.display = 'block';
+          counter.textContent = `1 / ${wfModalImages.length}`;
+        }
+        if (dotsWrap) dotsWrap.style.display = 'flex';
+      } else {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (counter) counter.style.display = 'none';
+        if (dotsWrap) dotsWrap.style.display = 'none';
+      }
+
+      if (captionEl) {
+        captionEl.textContent = wfModalImages[0].caption || '';
+        captionEl.style.display = wfModalImages[0].caption ? 'block' : 'none';
+      }
+      track.style.transform = 'translateX(0%)';
+    } else {
+      mediaWrap.style.display = 'none';
+    }
+
+    const modal = document.getElementById('wfDetailModal');
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function goToWfModalSlide(idx) {
+    if (!wfModalImages.length) return;
+    if (idx < 0) idx = wfModalImages.length - 1;
+    if (idx >= wfModalImages.length) idx = 0;
+    wfModalCurIdx = idx;
+
+    const track = document.getElementById('wfModalTrack');
+    const counter = document.getElementById('wfModalCounter');
+    const dotsWrap = document.getElementById('wfModalDots');
+    const captionEl = document.getElementById('wfModalCaption');
+
+    if (track) track.style.transform = `translateX(-${idx * 100}%)`;
+    if (counter) counter.textContent = `${idx + 1} / ${wfModalImages.length}`;
+    if (captionEl) {
+      captionEl.textContent = wfModalImages[idx].caption || '';
+      captionEl.style.display = wfModalImages[idx].caption ? 'block' : 'none';
+    }
+    if (dotsWrap) {
+      Array.from(dotsWrap.children).forEach((dot, i) => {
+        dot.classList.toggle('active', i === idx);
+      });
+    }
+  }
+
+  function wfModalNextSlide(e) {
+    if (e) e.stopPropagation();
+    goToWfModalSlide(wfModalCurIdx + 1);
+  }
+
+  function wfModalPrevSlide(e) {
+    if (e) e.stopPropagation();
+    goToWfModalSlide(wfModalCurIdx - 1);
+  }
+
+  function closeWfModal(e) {
+    if (e && e.target !== e.currentTarget && !e.target.closest('.modal-close-btn') && !e.target.closest('.modal-cancel-btn')) return;
+    const modal = document.getElementById('wfDetailModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Universal ESC key to close any active modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeProjModal();
+      closeWfModal();
+      closeWfLightbox();
+    }
+  });
 </script>
+
+<!-- FEATURED PROJECT DETAIL POPUP MODAL -->
+<div id="projDetailModal" class="portfolio-modal" onclick="closeProjModal(event)">
+  <div class="portfolio-modal-dialog" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close-btn" onclick="closeProjModal()" aria-label="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="modal-body">
+      <!-- Header Row -->
+      <div class="modal-header-meta">
+        <div class="modal-icon-box">
+          <i id="projModalIcon" class="fa-solid fa-rocket"></i>
+        </div>
+        <div class="modal-meta-badges">
+          <span id="projModalCaseBadge" class="proj-case-badge" style="display: none;">
+            <i class="fa-solid fa-book-open"></i> Case Study
+          </span>
+          <span id="projModalNumber" class="proj-badge">#01</span>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h3 id="projModalTitle" class="modal-title">Project Title</h3>
+
+      <!-- Section: Overview -->
+      <div class="modal-section-title">
+        <i class="fa-solid fa-align-left" style="color: var(--cyan); margin-right: 6px;"></i> Detailed Overview &amp; Key Features
+      </div>
+      <div id="projModalDesc" class="modal-desc-full"></div>
+
+      <!-- Section: Tech Stack -->
+      <div class="modal-section-title" style="margin-top: 24px;">
+        <i class="fa-solid fa-layer-group" style="color: var(--purple); margin-right: 6px;"></i> Tech Stack &amp; Tools Used
+      </div>
+      <div id="projModalStack" class="modal-tags-grid"></div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <button type="button" class="modal-cancel-btn" onclick="closeProjModal()">
+          Close
+        </button>
+        <a id="projModalArticleBtn" href="#" class="modal-primary-btn" style="display: none;">
+          <span class="btn-text">Read Case Study</span>
+          <i class="fa-solid fa-arrow-right-long"></i>
+        </a>
+        <a id="projModalDemoBtn" href="#" target="_blank" rel="noopener" class="modal-primary-btn" style="display: none;">
+          <span class="btn-text">View Live Demo</span>
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTOMATED WORKFLOW DETAIL POPUP MODAL (UPER IMAGE, NICHE SARA CONTENT) -->
+<div id="wfDetailModal" class="portfolio-modal" onclick="closeWfModal(event)">
+  <div class="portfolio-modal-dialog wf-modal-dialog" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close-btn modal-close-floating" onclick="closeWfModal()" aria-label="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <!-- UPER IMAGE SECTION -->
+    <div id="wfModalMedia" class="wf-modal-media-wrap" style="display: none;">
+      <div class="wf-modal-carousel" id="wfModalCarousel">
+        <div class="wf-modal-track" id="wfModalTrack"></div>
+        <button type="button" class="wf-modal-nav-btn wf-modal-prev" onclick="wfModalPrevSlide(event)" aria-label="Previous image">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button type="button" class="wf-modal-nav-btn wf-modal-next" onclick="wfModalNextSlide(event)" aria-label="Next image">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div class="wf-modal-counter" id="wfModalCounter">1 / 1</div>
+        <div class="wf-modal-dots" id="wfModalDots"></div>
+      </div>
+      <div id="wfModalCaption" class="wf-modal-caption"></div>
+    </div>
+
+    <!-- NICHE SARA CONTENT -->
+    <div class="modal-body wf-modal-body">
+      <!-- Meta Row -->
+      <div class="modal-header-meta">
+        <span class="wf-cat-pill">
+          <i id="wfModalIcon" class="fa-solid fa-robot"></i> <span id="wfModalCategory">n8n Automation</span>
+        </span>
+        <span id="wfModalOrder" class="wf-num-badge">#01</span>
+      </div>
+
+      <!-- Title -->
+      <h3 id="wfModalTitle" class="modal-title">Workflow Title</h3>
+
+      <!-- Section: Logic & Flow -->
+      <div class="modal-section-title">
+        <i class="fa-solid fa-diagram-project" style="color: var(--cyan); margin-right: 6px;"></i> Workflow Execution Logic &amp; Architecture
+      </div>
+      <div id="wfModalDesc" class="modal-desc-full"></div>
+
+      <!-- Section: Stack -->
+      <div class="modal-section-title" style="margin-top: 24px;">
+        <i class="fa-solid fa-screwdriver-wrench" style="color: var(--purple); margin-right: 6px;"></i> Integrated Tools &amp; APIs
+      </div>
+      <div id="wfModalStack" class="modal-tags-grid"></div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer-actions">
+        <button type="button" class="modal-cancel-btn" onclick="closeWfModal()">
+          Close
+        </button>
+        <a id="wfModalDemoBtn" href="#" target="_blank" rel="noopener noreferrer" class="modal-primary-btn" style="display: none;">
+          <span class="btn-text">View Live Workflow</span>
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- WORKFLOW FULLSCREEN LIGHTBOX -->
 <div id="wfLightbox" class="wf-lightbox" onclick="closeWfLightbox(event)">
