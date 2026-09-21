@@ -52,28 +52,98 @@ const obs = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-// COUNTER ANIMATION
-function animateCounter(el, target) {
-  let cur = 0;
+// COUNTER ANIMATION (Smooth Ease-Out on every page reload & scroll)
+function animateCounter(el) {
+  if (!el) return;
+  const rawTarget = el.dataset.target;
+  const target = parseInt(rawTarget, 10);
+  if (isNaN(target)) return;
   const showPlus = el.dataset.showPlus === 'true';
-  const step = Math.ceil(target / 40);
-  const timer = setInterval(() => {
-    cur = Math.min(cur + step, target);
-    el.textContent = cur + (showPlus ? '+' : '');
-    if (cur >= target) clearInterval(timer);
-  }, 40);
+
+  // Cancel any existing animation frame on this element
+  if (el._animFrame) {
+    cancelAnimationFrame(el._animFrame);
+    el._animFrame = null;
+  }
+
+  // Initial state on count start
+  el.textContent = '0' + (showPlus ? '+' : '');
+  el.classList.remove('pop');
+
+  const duration = 1600; // 1.6s smooth duration
+  let startTime = null;
+
+  function tick(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Ease-out cubic: 1 - (1 - progress)^3
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(easeOut * target);
+
+    el.textContent = current + (showPlus ? '+' : '');
+
+    if (progress < 1) {
+      el._animFrame = requestAnimationFrame(tick);
+    } else {
+      el.textContent = target + (showPlus ? '+' : '');
+      el.classList.add('pop');
+      setTimeout(() => el.classList.remove('pop'), 280);
+      el._animFrame = null;
+    }
+  }
+
+  el._animFrame = requestAnimationFrame(tick);
 }
 
+// 1. Observe stats for scroll-into-view if user reloaded while scrolled down
 const counterObs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
       const num = e.target.querySelector('.stat-num');
-      if (num) animateCounter(num, parseInt(num.dataset.target));
+      if (num && !num._hasAnimated) {
+        num._hasAnimated = true;
+        animateCounter(num);
+      }
       counterObs.unobserve(e.target);
     }
   });
-}, { threshold: 0.3 });
+}, { threshold: 0.15 });
+
 document.querySelectorAll('.stat').forEach(el => counterObs.observe(el));
+
+// 2. Guarantee smooth animation on every page reload
+function initStatsOnReload() {
+  const statsBar = document.querySelector('.stats-bar');
+  if (!statsBar) return;
+
+  const rect = statsBar.getBoundingClientRect();
+  const isInView = rect.top < window.innerHeight && rect.bottom >= 0;
+
+  if (isInView) {
+    // 260ms entrance delay so page paint is visible to human eye
+    setTimeout(() => {
+      document.querySelectorAll('.stat-num').forEach(num => {
+        num._hasAnimated = true;
+        animateCounter(num);
+      });
+    }, 260);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStatsOnReload);
+} else {
+  initStatsOnReload();
+}
+
+window.addEventListener('load', () => {
+  const firstStat = document.querySelector('.stat-num');
+  if (firstStat && (!firstStat._hasAnimated || firstStat.textContent.trim().startsWith('0'))) {
+    initStatsOnReload();
+  }
+});
 
 // SCROLL PROGRESS BAR & ACTIVE NAV
 const sects = document.querySelectorAll('section[id]');

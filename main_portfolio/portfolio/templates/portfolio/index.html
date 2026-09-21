@@ -3,65 +3,60 @@
 
 {% block extra_css %}
 <style>
-  /* Custom Contact Grid Responsive Layout */
-  .contact-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 16px !important;
-    width: 100% !important;
-    margin-top: 24px !important;
-  }
+  /* Exact original desktop contact styling */
+  @media (min-width: 901px) {
+    .contact-grid {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 16px !important;
+      width: 100% !important;
+      margin-top: 24px !important;
+    }
 
-  .contact-item {
-    display: flex !important;
-    align-items: center !important;
-    padding: 14px 18px !important;
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
-    border-radius: 12px !important;
-    text-decoration: none !important;
-    color: var(--white, #ffffff) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    box-sizing: border-box !important;
-  }
+    .contact-item {
+      display: flex !important;
+      align-items: center !important;
+      padding: 14px 18px !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+      border-radius: 12px !important;
+      text-decoration: none !important;
+      color: var(--white, #ffffff) !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      box-sizing: border-box !important;
+    }
 
-  .contact-item:hover {
-    transform: translateY(-2px) !important;
-    border-color: var(--cyan) !important;
-    background: rgba(0, 242, 254, 0.05) !important;
-    box-shadow: 0 10px 20px rgba(0, 242, 254, 0.1) !important;
-  }
+    .contact-item:hover {
+      transform: translateY(-2px) !important;
+      border-color: var(--cyan) !important;
+      background: rgba(0, 242, 254, 0.05) !important;
+      box-shadow: 0 10px 20px rgba(0, 242, 254, 0.1) !important;
+    }
 
-  /* Half-width (50%) */
-  .contact-item.half-width {
-    flex: 1 1 calc(50% - 10px) !important;
-    min-width: 200px !important;
-  }
-
-  /* Full-width (100%) */
-  .contact-item.full-width {
-    flex: 1 1 100% !important;
-  }
-
-  /* Icon custom spacing */
-  .contact-item-icon {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 16px !important;
-    margin-right: 12px !important;
-    color: var(--cyan) !important;
-    background: rgba(0, 242, 254, 0.1) !important;
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
+    /* Half-width (50%) */
     .contact-item.half-width {
+      flex: 1 1 calc(50% - 10px) !important;
+      min-width: 200px !important;
+    }
+
+    /* Full-width (100%) */
+    .contact-item.full-width {
       flex: 1 1 100% !important;
+    }
+
+    /* Icon custom spacing */
+    .contact-item-icon {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 16px !important;
+      margin-right: 12px !important;
+      color: var(--cyan) !important;
+      background: rgba(0, 242, 254, 0.1) !important;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 8px !important;
+      flex-shrink: 0 !important;
     }
   }
 </style>
@@ -366,7 +361,7 @@
 
         <!-- Card Body -->
         <div class="wf-body">
-          <div>
+          <div class="wf-body-top">
             <div class="wf-meta-row">
               <span class="wf-cat-pill">
                 <i class="{{ wf.icon_class }}"></i> {{ wf.category }}
@@ -383,15 +378,19 @@
                 {{ wf.description }}
               </div>
               {% if wf.description|length > 250 %}
-              <button type="button" class="wf-learn-more-btn" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
+              <button type="button" class="wf-learn-more-btn wf-learn-more-desktop" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
                 <span class="btn-text">Learn More</span>
                 <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
               </button>
               {% endif %}
+              <button type="button" class="wf-learn-more-btn wf-learn-more-mobile" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
+                <span class="btn-text">Learn More</span>
+                <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
+              </button>
             </div>
           </div>
 
-          <div>
+          <div class="wf-body-bottom">
             <div class="wf-tech-stack">
               {% for tech in wf.get_technologies_list %}
               <span class="wf-tech-tag">{{ tech }}</span>
@@ -417,6 +416,13 @@
         </div>
 
       </div>
+      {% endfor %}
+    </div>
+
+    <!-- Mobile Carousel Dots Indicator -->
+    <div class="workflows-carousel-dots" id="workflowsDots">
+      {% for wf in workflows %}
+      <span class="wf-carousel-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" onclick="scrollWfTo({{ forloop.counter0 }})" style="cursor: pointer;"></span>
       {% endfor %}
     </div>
   </div>
@@ -473,7 +479,7 @@
                 </span>
               </div>
 
-              <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #0F172A; line-height: 1.35; margin-bottom: 10px; letter-spacing: -0.3px;">
+              <h3 style="font-family: var(--font-main); font-size: 17px; font-weight: 700; color: #0F172A; line-height: 1.35; margin-bottom: 10px; letter-spacing: -0.3px;">
                 <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='#0F172A'">
                   {{ blog.title }}
                 </a>
@@ -489,7 +495,7 @@
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748B; font-weight: 500;">
                 <i class="fa-regular fa-user" style="margin-right: 4px; color: var(--purple);"></i> {{ blog.author|default:"Sahil Thakur" }}
               </span>
-              <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.gap='10px'" onmouseout="this.style.gap='6px'">
+              <a href="{% url 'portfolio:blog_detail' slug=blog.slug %}" style="font-family: var(--font-main); font-size: 13.5px; font-weight: 700; color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.gap='10px'" onmouseout="this.style.gap='6px'">
                 Read <i class="fa-solid fa-arrow-right-long"></i>
               </a>
             </div>
@@ -717,6 +723,82 @@
       window.addEventListener('resize', () => {
         if (window.innerWidth <= 768) startProjAuto();
         else stopProjAuto();
+      });
+    }
+
+    // Workflows Mobile Carousel Auto-Slider (Every 3 seconds)
+    const wfGrid = document.querySelector('.workflows-grid');
+    const wfDots = document.querySelectorAll('.wf-carousel-dot');
+    if (wfGrid && wfDots.length) {
+      let wfAutoTimer = null;
+      let currentWfIdx = 0;
+
+      function getWfCardStep() {
+        const cards = wfGrid.querySelectorAll('.wf-card');
+        if (cards.length > 1) {
+          return cards[1].offsetLeft - cards[0].offsetLeft;
+        }
+        const first = wfGrid.querySelector('.wf-card');
+        return first ? first.offsetWidth + 16 : 300;
+      }
+
+      function scrollToWf(index) {
+        if (window.innerWidth > 768) return;
+        const cards = wfGrid.querySelectorAll('.wf-card');
+        if (!cards.length) return;
+        const totalCards = cards.length;
+        currentWfIdx = ((index % totalCards) + totalCards) % totalCards;
+        const targetCard = cards[currentWfIdx];
+        if (targetCard) {
+          const scrollLeft = targetCard.offsetLeft - (wfGrid.offsetWidth - targetCard.offsetWidth) / 2;
+          wfGrid.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+        }
+        wfDots.forEach((dot, i) => dot.classList.toggle('active', i === currentWfIdx));
+      }
+
+      window.scrollWfTo = function(index) {
+        stopWfAuto();
+        scrollToWf(index);
+        setTimeout(startWfAuto, 4000);
+      };
+
+      function startWfAuto() {
+        if (window.innerWidth > 768) return;
+        stopWfAuto();
+        wfAutoTimer = setInterval(() => {
+          const totalCards = wfDots.length;
+          currentWfIdx = (currentWfIdx + 1) % totalCards;
+          scrollToWf(currentWfIdx);
+        }, 3000); // 3 seconds auto-scroll
+      }
+
+      function stopWfAuto() {
+        if (wfAutoTimer) {
+          clearInterval(wfAutoTimer);
+          wfAutoTimer = null;
+        }
+      }
+
+      wfGrid.addEventListener('scroll', () => {
+        const scrollPos = wfGrid.scrollLeft;
+        const step = getWfCardStep();
+        const activeIdx = Math.min(Math.max(0, Math.round(scrollPos / step)), wfDots.length - 1);
+        currentWfIdx = activeIdx;
+        wfDots.forEach((dot, i) => dot.classList.toggle('active', i === activeIdx));
+      }, { passive: true });
+
+      wfGrid.addEventListener('touchstart', stopWfAuto, { passive: true });
+      wfGrid.addEventListener('touchend', () => setTimeout(startWfAuto, 2500), { passive: true });
+      wfGrid.addEventListener('mouseenter', stopWfAuto);
+      wfGrid.addEventListener('mouseleave', () => setTimeout(startWfAuto, 2000));
+
+      startWfAuto();
+      window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) startWfAuto();
+        else stopWfAuto();
       });
     }
 
@@ -1070,6 +1152,13 @@
         const imageEl = document.createElement('img');
         imageEl.src = img.url;
         imageEl.alt = img.caption || data.title;
+        imageEl.onerror = function() {
+          this.style.display = 'none';
+          const placeholder = document.createElement('div');
+          placeholder.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; color: #64748B; font-family: "Space Grotesk", sans-serif; gap: 8px; padding: 20px; text-align: center; background: radial-gradient(circle at center, rgba(37, 99, 235, 0.12) 0%, #080D1A 70%);';
+          placeholder.innerHTML = `<i class="fa-solid fa-diagram-project" style="font-size: 40px; color: #38BDF8; margin-bottom: 4px;"></i><span style="font-size: 14px; font-weight: 600; color: #E2E8F0;">${img.caption || data.title}</span><span style="font-size: 11.5px; color: #64748B; font-family: 'JetBrains Mono', monospace;">Architecture & Workflow Diagram</span>`;
+          slide.appendChild(placeholder);
+        };
         slide.appendChild(imageEl);
         track.appendChild(slide);
 

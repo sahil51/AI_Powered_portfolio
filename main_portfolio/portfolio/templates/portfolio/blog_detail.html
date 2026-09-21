@@ -130,7 +130,7 @@
     justify-content: center;
     font-weight: 800;
     font-size: 15px;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-main);
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
     flex-shrink: 0;
   }
@@ -214,7 +214,7 @@
     line-height: 1.85;
     color: #334155;
     font-size: 17.5px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-main);
   }
 
   .blog-subtitle-summary {
@@ -276,7 +276,7 @@
   .blog-post-content h5, .blog-subtitle-summary h5,
   .blog-post-content h6, .blog-subtitle-summary h6 {
     color: #0F172A;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-main);
     font-weight: 700;
     margin-top: 32px;
     margin-bottom: 16px;
@@ -515,7 +515,7 @@
   }
 
   .sidebar-card-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-main);
     font-size: 16px;
     font-weight: 700;
     color: #0F172A;
@@ -747,12 +747,12 @@
             </div>
             <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
               <div
-                style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), #7C3AED); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; font-family: 'Space Grotesk', sans-serif; flex-shrink: 0;">
+                style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), #7C3AED); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; font-family: var(--font-main); flex-shrink: 0;">
                 ST
               </div>
               <div>
                 <h4
-                  style="font-family: 'Space Grotesk', sans-serif; font-size: 15.5px; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">
+                  style="font-family: var(--font-main); font-size: 15.5px; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">
                   {{ blog.author|default:"Sahil Thakur" }}
                 </h4>
                 <span style="font-size: 12.5px; color: #64748B; font-weight: 500;">Automation & AI Specialist</span>
@@ -801,7 +801,7 @@
                 {% endif %}
                 <div style="flex: 1; min-width: 0;">
                   <h4
-                    style="font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 700; color: #0F172A; line-height: 1.35; margin: 0 0 4px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    style="font-family: var(--font-main); font-size: 13.5px; font-weight: 700; color: #0F172A; line-height: 1.35; margin: 0 0 4px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     {{ item.title }}
                   </h4>
                   <span style="font-size: 11.5px; color: #94A3B8;">
