@@ -398,6 +398,14 @@ nav {
   width: 100%;
 }
 
+.hero-text-col {
+  order: 1;
+}
+
+.hero-term-col {
+  order: 2;
+}
+
 .hero-eyebrow {
   font-size: 14px;
   color: #047857;
@@ -3363,7 +3371,15 @@ section {
 @media (max-width: 1080px) {
   .hero-grid {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 32px;
+  }
+
+  .hero-term-col {
+    order: 1;
+  }
+
+  .hero-text-col {
+    order: 2;
   }
 
   .terminal {
