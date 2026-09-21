@@ -238,7 +238,7 @@
   <div class="section-inner">
     <div class="section-label reveal">Work</div>
     <h2 class="section-title reveal">Featured <span>Projects</span></h2>
-    <div class="projects-grid">
+    <div class="projects-grid" id="projectsGrid">
       {% for proj in projects %}
       <div class="proj-card reveal" id="proj-card-{{ proj.id }}">
         <div class="proj-content">
@@ -256,30 +256,31 @@
             </div>
           </div>
 
-          <h3 class="proj-name">
+          <h3 class="proj-name" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;" title="{{ proj.title }}">
             {{ proj.title }}
           </h3>
 
           <div class="proj-desc-wrap">
-            <div class="proj-desc {% if proj.description|length > 300 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
+            <div class="proj-desc" id="proj-desc-{{ forloop.counter }}">
               {{ proj.description }}
             </div>
-            {% if proj.description|length > 300 %}
             <button type="button" class="proj-learn-more-btn" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
               <span class="btn-text">Learn More</span>
-              <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+              <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
             </button>
-            {% endif %}
           </div>
 
           <div class="proj-stack">
-            {% for tech in proj.get_technologies_list %}
+            {% for tech in proj.get_technologies_list|slice:":4" %}
             <span class="proj-tag">{{ tech }}</span>
             {% endfor %}
+            {% if proj.get_technologies_list|length > 4 %}
+            <span class="proj-tag proj-tag-more" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer; background: rgba(37,99,235,0.08); color: var(--cyan); border-color: rgba(37,99,235,0.25);" title="View all tags in modal">+{{ proj.get_technologies_list|length|add:"-4" }} more</span>
+            {% endif %}
           </div>
 
-          {% if proj.get_project_url != '#' %}
           <div class="proj-footer">
+            {% if proj.get_project_url != '#' %}
             <a href="{{ proj.get_project_url }}" class="proj-read-link" style="text-decoration: none;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
               {% if proj.blog_post %}
               Read Article <i class="fa-solid fa-arrow-right-long"></i>
@@ -287,17 +288,21 @@
               View Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
               {% endif %}
             </a>
+            {% else %}
+            <span class="proj-read-link" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;">
+              Full Details <i class="fa-solid fa-arrow-right-long"></i>
+            </span>
+            {% endif %}
           </div>
-          {% endif %}
         </div>
       </div>
       {% endfor %}
     </div>
 
     <!-- Mobile Carousel Dots Indicator -->
-    <div class="projects-carousel-dots">
+    <div class="projects-carousel-dots" id="projectsDots">
       {% for proj in projects %}
-      <span class="proj-dot {% if forloop.first %}active{% endif %}"></span>
+      <span class="proj-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" onclick="scrollProjTo({{ forloop.counter0 }})" style="cursor: pointer;"></span>
       {% endfor %}
     </div>
   </div>
@@ -639,18 +644,81 @@
 <script>
   window.TYPED_ROLES = {{ roles|safe }};
 
-  // Projects Mobile Carousel Dot Sync
+  // Projects Mobile Carousel Auto-Slider (Every 3 seconds)
   document.addEventListener('DOMContentLoaded', () => {
     const projGrid = document.querySelector('.projects-grid');
     const projDots = document.querySelectorAll('.proj-dot');
     if (projGrid && projDots.length) {
+      let projAutoTimer = null;
+      let currentProjIdx = 0;
+
+      function getProjCardStep() {
+        const cards = projGrid.querySelectorAll('.proj-card');
+        if (cards.length > 1) {
+          return cards[1].offsetLeft - cards[0].offsetLeft;
+        }
+        const first = projGrid.querySelector('.proj-card');
+        return first ? first.offsetWidth + 16 : 300;
+      }
+
+      function scrollToProj(index) {
+        if (window.innerWidth > 768) return;
+        const cards = projGrid.querySelectorAll('.proj-card');
+        if (!cards.length) return;
+        const totalCards = cards.length;
+        currentProjIdx = ((index % totalCards) + totalCards) % totalCards;
+        const targetCard = cards[currentProjIdx];
+        if (targetCard) {
+          const scrollLeft = targetCard.offsetLeft - (projGrid.offsetWidth - targetCard.offsetWidth) / 2;
+          projGrid.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+        }
+        projDots.forEach((dot, i) => dot.classList.toggle('active', i === currentProjIdx));
+      }
+
+      window.scrollProjTo = function(index) {
+        stopProjAuto();
+        scrollToProj(index);
+        setTimeout(startProjAuto, 4000);
+      };
+
+      function startProjAuto() {
+        if (window.innerWidth > 768) return;
+        stopProjAuto();
+        projAutoTimer = setInterval(() => {
+          const totalCards = projDots.length;
+          currentProjIdx = (currentProjIdx + 1) % totalCards;
+          scrollToProj(currentProjIdx);
+        }, 3000); // 3 seconds auto-scroll
+      }
+
+      function stopProjAuto() {
+        if (projAutoTimer) {
+          clearInterval(projAutoTimer);
+          projAutoTimer = null;
+        }
+      }
+
       projGrid.addEventListener('scroll', () => {
         const scrollPos = projGrid.scrollLeft;
-        const firstCard = projGrid.querySelector('.proj-card');
-        const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 300;
-        const activeIdx = Math.min(Math.round(scrollPos / cardWidth), projDots.length - 1);
+        const step = getProjCardStep();
+        const activeIdx = Math.min(Math.max(0, Math.round(scrollPos / step)), projDots.length - 1);
+        currentProjIdx = activeIdx;
         projDots.forEach((dot, i) => dot.classList.toggle('active', i === activeIdx));
       }, { passive: true });
+
+      projGrid.addEventListener('touchstart', stopProjAuto, { passive: true });
+      projGrid.addEventListener('touchend', () => setTimeout(startProjAuto, 2500), { passive: true });
+      projGrid.addEventListener('mouseenter', stopProjAuto);
+      projGrid.addEventListener('mouseleave', () => setTimeout(startProjAuto, 2000));
+
+      startProjAuto();
+      window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) startProjAuto();
+        else stopProjAuto();
+      });
     }
 
     // Blogs Mobile Carousel Auto Slider
