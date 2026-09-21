@@ -256,31 +256,34 @@
             </div>
           </div>
 
-          <h3 class="proj-name" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;" title="{{ proj.title }}">
+          <h3 class="proj-name">
             {{ proj.title }}
           </h3>
 
           <div class="proj-desc-wrap">
-            <div class="proj-desc" id="proj-desc-{{ forloop.counter }}">
+            <div class="proj-desc {% if proj.description|length > 300 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
               {{ proj.description }}
             </div>
-            <button type="button" class="proj-learn-more-btn" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
+            {% if proj.description|length > 300 %}
+            <button type="button" class="proj-learn-more-btn proj-learn-more-desktop" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
+              <span class="btn-text">Learn More</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+            </button>
+            {% endif %}
+            <button type="button" class="proj-learn-more-btn proj-learn-more-mobile" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
               <span class="btn-text">Learn More</span>
               <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
             </button>
           </div>
 
           <div class="proj-stack">
-            {% for tech in proj.get_technologies_list|slice:":4" %}
+            {% for tech in proj.get_technologies_list %}
             <span class="proj-tag">{{ tech }}</span>
             {% endfor %}
-            {% if proj.get_technologies_list|length > 4 %}
-            <span class="proj-tag proj-tag-more" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer; background: rgba(37,99,235,0.08); color: var(--cyan); border-color: rgba(37,99,235,0.25);" title="View all tags in modal">+{{ proj.get_technologies_list|length|add:"-4" }} more</span>
-            {% endif %}
           </div>
 
+          {% if proj.get_project_url != '#' %}
           <div class="proj-footer">
-            {% if proj.get_project_url != '#' %}
             <a href="{{ proj.get_project_url }}" class="proj-read-link" style="text-decoration: none;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
               {% if proj.blog_post %}
               Read Article <i class="fa-solid fa-arrow-right-long"></i>
@@ -288,12 +291,8 @@
               View Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
               {% endif %}
             </a>
-            {% else %}
-            <span class="proj-read-link" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;">
-              Full Details <i class="fa-solid fa-arrow-right-long"></i>
-            </span>
-            {% endif %}
           </div>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
