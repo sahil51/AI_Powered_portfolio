@@ -55,7 +55,7 @@ nav {
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0 4vw;
+  padding: 0 3vw;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -65,7 +65,7 @@ nav {
 }
 
 .nav-container {
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto;
   width: 100%;
   display: flex;
@@ -314,7 +314,7 @@ nav {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 120px 4vw 80px;
+  padding: 120px 3vw 80px;
   position: relative;
   overflow: hidden
 }
@@ -356,7 +356,7 @@ nav {
   gap: 50px;
   align-items: center;
   width: 100%;
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto;
   position: relative;
   z-index: 1
@@ -624,11 +624,11 @@ h1 {
   background: var(--bg2);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 28px 4vw
+  padding: 28px 3vw
 }
 
 .stats-inner {
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -660,11 +660,11 @@ h1 {
 
 /* SECTIONS */
 section {
-  padding: 56px 4vw
+  padding: 56px 3vw
 }
 
 .section-inner {
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto
 }
 
@@ -718,7 +718,8 @@ section {
   font-size: 17.5px;
   line-height: 1.85;
   color: #1E293B;
-  max-width: 1100px;
+  max-width: 100%;
+  width: 100%;
 }
 
 .summary-text strong {
@@ -1305,12 +1306,21 @@ section {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  text-decoration: none !important;
   transition: all 0.2s ease;
+}
+
+.proj-read-link:hover,
+.proj-read-link:focus,
+.proj-read-link:active,
+.proj-read-link:visited {
+  text-decoration: none !important;
 }
 
 .proj-card:hover .proj-read-link {
   color: var(--purple);
   gap: 9px;
+  text-decoration: none !important;
 }
 
 /* EDUCATION */
@@ -2663,11 +2673,11 @@ section {
 /* MARKETING FUNNEL CTA */
 #cta-funnel {
   background: var(--bg);
-  padding: 80px 4vw;
+  padding: 80px 3vw;
 }
 
 .funnel-card {
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto;
   background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
   border-radius: 24px;
@@ -2759,7 +2769,7 @@ section {
 #contact {
   background: linear-gradient(135deg, var(--bg) 0%, #E2E8F0 100%);
   text-align: center;
-  padding: 100px 4vw
+  padding: 100px 3vw
 }
 
 .contact-wrap {
@@ -2783,7 +2793,7 @@ section {
 }
 
 .contact-split-container {
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto;
   width: 100%;
   padding: 0;
@@ -3137,13 +3147,13 @@ section {
 .site-footer {
   background: #FFFFFF;
   border-top: 1px solid #E2E8F0;
-  padding: 60px 4vw 36px;
+  padding: 60px 3vw 36px;
   position: relative;
   overflow: hidden;
 }
 
 .footer-container {
-  max-width: 1480px;
+  max-width: 1640px;
   margin: 0 auto;
   width: 100%;
   display: flex;
@@ -3384,7 +3394,7 @@ section {
 .visitors-page {
   width: 100%;
   max-width: 100%;
-  padding: 0 4vw;
+  padding: 0 3vw;
   margin: 0 auto;
   box-sizing: border-box;
 }
@@ -3913,7 +3923,7 @@ section {
    AUTOMATION WORKFLOWS SECTION & MULTI-IMAGE CAROUSEL
    ═══════════════════════════════════════════════════════════════════════════ */
 #workflows {
-  padding: 80px 6vw;
+  padding: 80px 3vw;
   background: var(--bg);
   position: relative;
   overflow: hidden;
