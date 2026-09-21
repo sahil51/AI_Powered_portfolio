@@ -235,7 +235,7 @@
     <h2 class="section-title reveal">Featured <span>Projects</span></h2>
     <div class="projects-grid" id="projectsGrid">
       {% for proj in projects %}
-      <div class="proj-card reveal" id="proj-card-{{ proj.id }}">
+      <div class="proj-card reveal" id="proj-card-{{ proj.id }}" onclick="openProjModal(event, '{{ proj.id }}')">
         <div class="proj-content">
           <div class="proj-header-row">
             <div class="proj-icon-box" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;" title="Click to view details">
@@ -265,10 +265,18 @@
               <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
             </button>
             {% endif %}
-            <button type="button" class="proj-learn-more-btn proj-learn-more-mobile" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
-              <span class="btn-text">Learn More</span>
-              <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
-            </button>
+            <div class="proj-actions-row">
+              <button type="button" class="proj-learn-more-btn proj-learn-more-mobile" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
+                <span class="btn-text">Learn More</span>
+                <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
+              </button>
+              {% if proj.get_project_url != '#' %}
+              <a href="{{ proj.get_project_url }}" target="_blank" rel="noopener" class="proj-view-live-btn" onclick="event.stopPropagation()" aria-label="View live project {{ proj.title }}">
+                <span class="btn-text">View Live</span>
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10.5px;"></i>
+              </a>
+              {% endif %}
+            </div>
           </div>
 
           <div class="proj-stack">
@@ -279,7 +287,7 @@
 
           {% if proj.get_project_url != '#' %}
           <div class="proj-footer">
-            <a href="{{ proj.get_project_url }}" class="proj-read-link" style="text-decoration: none;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
+            <a href="{{ proj.get_project_url }}" class="proj-read-link" onclick="event.stopPropagation()" style="text-decoration: none;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
               {% if proj.blog_post %}
               Read Article <i class="fa-solid fa-arrow-right-long"></i>
               {% else %}
@@ -319,7 +327,7 @@
 
     <div class="workflows-grid">
       {% for wf in workflows %}
-      <div class="wf-card reveal" id="wf-card-{{ wf.id }}">
+      <div class="wf-card reveal" id="wf-card-{{ wf.id }}" onclick="openWfModal(event, '{{ wf.id }}')">
         
         <!-- Multi-Image Carousel / Viewer -->
         {% if wf.images.all %}
@@ -383,10 +391,18 @@
                 <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
               </button>
               {% endif %}
-              <button type="button" class="wf-learn-more-btn wf-learn-more-mobile" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
-                <span class="btn-text">Learn More</span>
-                <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
-              </button>
+              <div class="wf-actions-row">
+                <button type="button" class="wf-learn-more-btn wf-learn-more-mobile" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
+                  <span class="btn-text">Learn More</span>
+                  <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
+                </button>
+                {% if wf.link %}
+                <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-view-live-btn" onclick="event.stopPropagation()" aria-label="View live workflow {{ wf.title }}">
+                  <span class="btn-text">View Live</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i>
+                </a>
+                {% endif %}
+              </div>
             </div>
           </div>
 
@@ -399,7 +415,7 @@
 
             <div class="wf-footer-row">
               {% if wf.images.all %}
-              <button type="button" class="wf-view-gallery-btn" onclick="openWfLightbox('{{ wf.id }}', 0)">
+              <button type="button" class="wf-view-gallery-btn" onclick="event.stopPropagation(); openWfLightbox('{{ wf.id }}', 0)">
                 <i class="fa-regular fa-image"></i> View Diagram{% if wf.images.count > 1 %}s ({{ wf.images.count }}){% endif %}
               </button>
               {% else %}
@@ -407,7 +423,7 @@
               {% endif %}
 
               {% if wf.link %}
-              <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-demo-link">
+              <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-demo-link" onclick="event.stopPropagation()">
                 View Workflow <i class="fa-solid fa-arrow-up-right-from-square"></i>
               </a>
               {% endif %}
@@ -936,6 +952,10 @@
   let currentLightboxIndex = 0;
 
   function openWfLightbox(wfId, idx) {
+    if (window.innerWidth <= 768) {
+      openWfModal(null, wfId);
+      return;
+    }
     const gallery = workflowGalleries[wfId];
     if (!gallery || gallery.length === 0) return;
     currentLightboxGallery = gallery;
@@ -1057,7 +1077,11 @@
     }
 
     const modal = document.getElementById('projDetailModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      const body = modal.querySelector('.modal-body');
+      if (body) body.scrollTop = 0;
+    }
     document.body.style.overflow = 'hidden';
   }
 
@@ -1207,7 +1231,11 @@
     }
 
     const modal = document.getElementById('wfDetailModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      const body = modal.querySelector('.modal-body');
+      if (body) body.scrollTop = 0;
+    }
     document.body.style.overflow = 'hidden';
   }
 
@@ -1265,8 +1293,8 @@
 <!-- FEATURED PROJECT DETAIL POPUP MODAL -->
 <div id="projDetailModal" class="portfolio-modal" onclick="closeProjModal(event)">
   <div class="portfolio-modal-dialog" onclick="event.stopPropagation()">
-    <div class="modal-body">
-      <!-- Header Row -->
+    <!-- FIXED HEADER AT TOP -->
+    <div class="modal-header">
       <div class="modal-header-meta">
         <div class="modal-icon-box">
           <i id="projModalIcon" class="fa-solid fa-rocket"></i>
@@ -1284,7 +1312,10 @@
 
       <!-- Title -->
       <h3 id="projModalTitle" class="modal-title">Project Title</h3>
+    </div>
 
+    <!-- SCROLLABLE MIDDLE CONTENT -->
+    <div class="modal-body">
       <!-- Section: Overview -->
       <div class="modal-section-title">
         <i class="fa-solid fa-align-left" style="color: var(--cyan); margin-right: 6px;"></i> Detailed Overview &amp; Key Features
@@ -1296,21 +1327,21 @@
         <i class="fa-solid fa-layer-group" style="color: var(--purple); margin-right: 6px;"></i> Tech Stack &amp; Tools Used
       </div>
       <div id="projModalStack" class="modal-tags-grid"></div>
+    </div>
 
-      <!-- Footer Actions -->
-      <div class="modal-footer-actions">
-        <button type="button" class="modal-cancel-btn" onclick="closeProjModal()">
-          Close
-        </button>
-        <a id="projModalArticleBtn" href="#" class="modal-primary-btn" style="display: none;">
-          <span class="btn-text">Read Case Study</span>
-          <i class="fa-solid fa-arrow-right-long"></i>
-        </a>
-        <a id="projModalDemoBtn" href="#" target="_blank" rel="noopener" class="modal-primary-btn" style="display: none;">
-          <span class="btn-text">View Live Demo</span>
-          <i class="fa-solid fa-arrow-up-right-from-square"></i>
-        </a>
-      </div>
+    <!-- FIXED FOOTER ACTIONS AT BOTTOM -->
+    <div class="modal-footer-actions">
+      <button type="button" class="modal-cancel-btn" onclick="closeProjModal()">
+        Close
+      </button>
+      <a id="projModalArticleBtn" href="#" class="modal-primary-btn" style="display: none;">
+        <span class="btn-text">Read Case Study</span>
+        <i class="fa-solid fa-arrow-right-long"></i>
+      </a>
+      <a id="projModalDemoBtn" href="#" target="_blank" rel="noopener" class="modal-primary-btn" style="display: none;">
+        <span class="btn-text">View Live</span>
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </a>
     </div>
   </div>
 </div>
@@ -1338,7 +1369,7 @@
       <div id="wfModalCaption" class="wf-modal-caption"></div>
     </div>
 
-    <!-- NICHE SARA CONTENT -->
+    <!-- SCROLLABLE MIDDLE CONTENT -->
     <div class="modal-body wf-modal-body">
       <!-- Meta Row -->
       <div class="modal-header-meta">
@@ -1367,17 +1398,17 @@
         <i class="fa-solid fa-screwdriver-wrench" style="color: var(--purple); margin-right: 6px;"></i> Integrated Tools &amp; APIs
       </div>
       <div id="wfModalStack" class="modal-tags-grid"></div>
+    </div>
 
-      <!-- Footer Actions -->
-      <div class="modal-footer-actions">
-        <button type="button" class="modal-cancel-btn" onclick="closeWfModal()">
-          Close
-        </button>
-        <a id="wfModalDemoBtn" href="#" target="_blank" rel="noopener noreferrer" class="modal-primary-btn" style="display: none;">
-          <span class="btn-text">View Live Workflow</span>
-          <i class="fa-solid fa-arrow-up-right-from-square"></i>
-        </a>
-      </div>
+    <!-- FIXED FOOTER ACTIONS AT BOTTOM -->
+    <div class="modal-footer-actions wf-modal-footer-actions">
+      <button type="button" class="modal-cancel-btn" onclick="closeWfModal()">
+        Close
+      </button>
+      <a id="wfModalDemoBtn" href="#" target="_blank" rel="noopener noreferrer" class="modal-primary-btn" style="display: none;">
+        <span class="btn-text">View Live Workflow</span>
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </a>
     </div>
   </div>
 </div>

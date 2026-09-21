@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}?v=20260921_unified_font_stats_counter" />
-  <link rel="stylesheet" href="{% static 'portfolio/css/typing.css' %}?v=20260921_unified_font_stats_counter" />
+  <link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}?v=20260921_removed_online_badge" />
+  <link rel="stylesheet" href="{% static 'portfolio/css/typing.css' %}?v=20260921_removed_online_badge" />
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -103,7 +103,13 @@
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-quote-wrap">
-        <div class="footer-quote-icon"><i class="fa-solid fa-terminal"></i></div>
+        <a href="{% url 'portfolio:home' %}" class="footer-logo-wrap" aria-label="Sahil Thakur Home">
+          {% if hero.logo_image %}
+          <img src="{{ hero.logo_image.url }}" alt="{{ hero.brand_name|default:'Sahil Thakur' }} Logo" class="footer-logo-img">
+          {% else %}
+          <div class="footer-logo-badge">ST</div>
+          {% endif %}
+        </a>
         <p class="footer-quote-text">
           “Architecting resilient backends, scalable pipelines & autonomous AI intelligence.”
         </p>
@@ -147,7 +153,6 @@
         </div>
         <div class="chat-mini-info">
           <div class="chat-mini-name">Daisy</div>
-          <div class="chat-mini-status"><span></span> Online</div>
         </div>
       </div>
       <div class="chat-header-actions">

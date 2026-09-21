@@ -1002,18 +1002,27 @@ connectWebSocket();
     }, 800);
   }
 
+  bubble.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = document.getElementById('chatBtn');
+    if (btn) btn.click();
+  });
+
+  function syncOpenState() {
+    const open = isChatOpen();
+    document.body.classList.toggle('chat-is-open', open);
+    const btn = document.getElementById('chatBtn');
+    if (btn) btn.classList.toggle('chat-open-hidden', open);
+    if (open) hideOnOpen();
+    else reshowOnClose();
+  }
+
   if (chatWin) {
-    const observer = new MutationObserver(() => {
-      if (isChatOpen()) hideOnOpen();
-      else reshowOnClose();
-    });
+    const observer = new MutationObserver(syncOpenState);
     observer.observe(chatWin, { attributes: true, attributeFilter: ['class'] });
   }
   if (chatFs) {
-    const observer = new MutationObserver(() => {
-      if (isChatOpen()) hideOnOpen();
-      else reshowOnClose();
-    });
+    const observer = new MutationObserver(syncOpenState);
     observer.observe(chatFs, { attributes: true, attributeFilter: ['class'] });
   }
 })();
