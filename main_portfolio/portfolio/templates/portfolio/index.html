@@ -1037,8 +1037,17 @@
         captionEl.style.display = wfModalImages[0].caption ? 'block' : 'none';
       }
       track.style.transform = 'translateX(0%)';
+
+      const floatingClose = document.getElementById('wfModalFloatingClose');
+      if (floatingClose) floatingClose.style.display = 'flex';
+      const inlineClose = document.getElementById('wfModalInlineClose');
+      if (inlineClose) inlineClose.style.display = 'none';
     } else {
       mediaWrap.style.display = 'none';
+      const floatingClose = document.getElementById('wfModalFloatingClose');
+      if (floatingClose) floatingClose.style.display = 'none';
+      const inlineClose = document.getElementById('wfModalInlineClose');
+      if (inlineClose) inlineClose.style.display = 'inline-flex';
     }
 
     const modal = document.getElementById('wfDetailModal');
@@ -1100,10 +1109,6 @@
 <!-- FEATURED PROJECT DETAIL POPUP MODAL -->
 <div id="projDetailModal" class="portfolio-modal" onclick="closeProjModal(event)">
   <div class="portfolio-modal-dialog" onclick="event.stopPropagation()">
-    <button type="button" class="modal-close-btn" onclick="closeProjModal()" aria-label="Close">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-
     <div class="modal-body">
       <!-- Header Row -->
       <div class="modal-header-meta">
@@ -1115,6 +1120,9 @@
             <i class="fa-solid fa-book-open"></i> Case Study
           </span>
           <span id="projModalNumber" class="proj-badge">#01</span>
+          <button type="button" class="modal-close-btn" onclick="closeProjModal()" aria-label="Close" title="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       </div>
 
@@ -1154,7 +1162,7 @@
 <!-- AUTOMATED WORKFLOW DETAIL POPUP MODAL (UPER IMAGE, NICHE SARA CONTENT) -->
 <div id="wfDetailModal" class="portfolio-modal" onclick="closeWfModal(event)">
   <div class="portfolio-modal-dialog wf-modal-dialog" onclick="event.stopPropagation()">
-    <button type="button" class="modal-close-btn modal-close-floating" onclick="closeWfModal()" aria-label="Close">
+    <button type="button" class="modal-close-btn modal-close-floating" id="wfModalFloatingClose" onclick="closeWfModal()" aria-label="Close" title="Close">
       <i class="fa-solid fa-xmark"></i>
     </button>
 
@@ -1181,7 +1189,12 @@
         <span class="wf-cat-pill">
           <i id="wfModalIcon" class="fa-solid fa-robot"></i> <span id="wfModalCategory">n8n Automation</span>
         </span>
-        <span id="wfModalOrder" class="wf-num-badge">#01</span>
+        <div class="modal-meta-badges">
+          <span id="wfModalOrder" class="wf-num-badge">#01</span>
+          <button type="button" class="modal-close-btn" id="wfModalInlineClose" onclick="closeWfModal()" aria-label="Close" title="Close" style="display: none;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Title -->
