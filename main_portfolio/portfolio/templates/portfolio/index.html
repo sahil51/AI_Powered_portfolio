@@ -256,18 +256,20 @@
             </div>
           </div>
 
-          <h3 class="proj-name" onclick="openProjModal(event, '{{ proj.id }}')" style="cursor: pointer;" title="Click to view full details">
+          <h3 class="proj-name">
             {{ proj.title }}
           </h3>
 
           <div class="proj-desc-wrap">
-            <div class="proj-desc collapsible" id="proj-desc-{{ forloop.counter }}">
+            <div class="proj-desc {% if proj.description|length > 300 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
               {{ proj.description }}
             </div>
+            {% if proj.description|length > 300 %}
             <button type="button" class="proj-learn-more-btn" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
-              <i class="fa-regular fa-eye"></i>
               <span class="btn-text">Learn More</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
             </button>
+            {% endif %}
           </div>
 
           <div class="proj-stack">
@@ -276,11 +278,8 @@
             {% endfor %}
           </div>
 
+          {% if proj.get_project_url != '#' %}
           <div class="proj-footer">
-            <button type="button" class="proj-modal-trigger-link" onclick="openProjModal(event, '{{ proj.id }}')">
-              <i class="fa-regular fa-file-lines"></i> Full Details
-            </button>
-            {% if proj.get_project_url != '#' %}
             <a href="{{ proj.get_project_url }}" class="proj-read-link" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
               {% if proj.blog_post %}
               Read Article <i class="fa-solid fa-arrow-right-long"></i>
@@ -288,8 +287,8 @@
               View Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
               {% endif %}
             </a>
-            {% endif %}
           </div>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
@@ -371,18 +370,20 @@
               <span class="wf-num-badge">#0{{ wf.order }}</span>
             </div>
 
-            <h3 class="wf-title" onclick="openWfModal(event, '{{ wf.id }}')" style="cursor: pointer;" title="Click to view full details">
+            <h3 class="wf-title">
               {{ wf.title }}
             </h3>
 
             <div class="wf-desc-wrap">
-              <div class="wf-desc collapsible" id="wf-desc-{{ wf.id }}">
+              <div class="wf-desc {% if wf.description|length > 250 %}collapsible{% endif %}" id="wf-desc-{{ wf.id }}">
                 {{ wf.description }}
               </div>
+              {% if wf.description|length > 250 %}
               <button type="button" class="wf-learn-more-btn" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
-                <i class="fa-regular fa-eye"></i>
                 <span class="btn-text">Learn More</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
               </button>
+              {% endif %}
             </div>
           </div>
 
@@ -394,9 +395,13 @@
             </div>
 
             <div class="wf-footer-row">
-              <button type="button" class="wf-view-gallery-btn" onclick="openWfModal(event, '{{ wf.id }}')">
-                <i class="fa-regular fa-file-lines"></i> View Full Details
+              {% if wf.images.all %}
+              <button type="button" class="wf-view-gallery-btn" onclick="openWfLightbox('{{ wf.id }}', 0)">
+                <i class="fa-regular fa-image"></i> View Diagram{% if wf.images.count > 1 %}s ({{ wf.images.count }}){% endif %}
               </button>
+              {% else %}
+              <span></span>
+              {% endif %}
 
               {% if wf.link %}
               <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-demo-link">
