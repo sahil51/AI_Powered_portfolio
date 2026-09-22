@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}?v=20260921_removed_online_badge" />
-  <link rel="stylesheet" href="{% static 'portfolio/css/typing.css' %}?v=20260921_removed_online_badge" />
+  <link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}?v=20260923_single_page_hero_contact_ai_chat" />
+  <link rel="stylesheet" href="{% static 'portfolio/css/typing.css' %}?v=20260922_workflows_v6" />
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -60,7 +60,7 @@
           WhatsApp
         </a>
         <a href="#" class="nav-cta ai-cta open-chat"><i class="fa-solid fa-robot" style="font-size: 14px;"></i> Ask AI</a>
-        <a href="mailto:{{ hero.email }}" class="nav-cta"><i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
+        <a href="mailto:{{ hero.email }}" class="nav-cta hire-cta"><i class="fa-solid fa-paper-plane" style="font-size: 13px;"></i>
           Hire Me</a>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -236,7 +236,7 @@
     {% endif %}
   </script>
   {% block pre_js %}{% endblock %}
-  <script src="{% static 'portfolio/js/main.js' %}?v=20260921_unified_font_stats_counter"></script>
+  <script src="{% static 'portfolio/js/main.js' %}?v=20260923_stats_contact_footer_responsive"></script>
   {% block extra_js %}{% endblock %}
 </body>
 

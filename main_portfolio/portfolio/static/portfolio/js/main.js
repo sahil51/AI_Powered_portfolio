@@ -109,26 +109,27 @@ const counterObs = new IntersectionObserver((entries) => {
       counterObs.unobserve(e.target);
     }
   });
-}, { threshold: 0.15 });
+}, { threshold: 0.05 });
 
 document.querySelectorAll('.stat').forEach(el => counterObs.observe(el));
 
-// 2. Guarantee smooth animation on every page reload
+// 2. Guarantee smooth animation on every page reload and resize
 function initStatsOnReload() {
   const statsBar = document.querySelector('.stats-bar');
   if (!statsBar) return;
 
   const rect = statsBar.getBoundingClientRect();
-  const isInView = rect.top < window.innerHeight && rect.bottom >= 0;
+  const isInView = rect.top < (window.innerHeight + 80) && rect.bottom >= -80;
 
   if (isInView) {
-    // 260ms entrance delay so page paint is visible to human eye
     setTimeout(() => {
       document.querySelectorAll('.stat-num').forEach(num => {
-        num._hasAnimated = true;
-        animateCounter(num);
+        if (!num._hasAnimated) {
+          num._hasAnimated = true;
+          animateCounter(num);
+        }
       });
-    }, 260);
+    }, 200);
   }
 }
 
@@ -139,8 +140,12 @@ if (document.readyState === 'loading') {
 }
 
 window.addEventListener('load', () => {
+  initStatsOnReload();
+});
+
+window.addEventListener('resize', () => {
   const firstStat = document.querySelector('.stat-num');
-  if (firstStat && (!firstStat._hasAnimated || firstStat.textContent.trim().startsWith('0'))) {
+  if (firstStat && !firstStat._hasAnimated) {
     initStatsOnReload();
   }
 });

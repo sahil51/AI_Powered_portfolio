@@ -2,64 +2,6 @@
 {% load static %}
 
 {% block extra_css %}
-<style>
-  /* Exact original desktop contact styling */
-  @media (min-width: 901px) {
-    .contact-grid {
-      display: flex !important;
-      flex-wrap: wrap !important;
-      gap: 16px !important;
-      width: 100% !important;
-      margin-top: 24px !important;
-    }
-
-    .contact-item {
-      display: flex !important;
-      align-items: center !important;
-      padding: 14px 18px !important;
-      background: rgba(255, 255, 255, 0.02) !important;
-      border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
-      border-radius: 12px !important;
-      text-decoration: none !important;
-      color: var(--white, #ffffff) !important;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      box-sizing: border-box !important;
-    }
-
-    .contact-item:hover {
-      transform: translateY(-2px) !important;
-      border-color: var(--cyan) !important;
-      background: rgba(0, 242, 254, 0.05) !important;
-      box-shadow: 0 10px 20px rgba(0, 242, 254, 0.1) !important;
-    }
-
-    /* Half-width (50%) */
-    .contact-item.half-width {
-      flex: 1 1 calc(50% - 10px) !important;
-      min-width: 200px !important;
-    }
-
-    /* Full-width (100%) */
-    .contact-item.full-width {
-      flex: 1 1 100% !important;
-    }
-
-    /* Icon custom spacing */
-    .contact-item-icon {
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-size: 16px !important;
-      margin-right: 12px !important;
-      color: var(--cyan) !important;
-      background: rgba(0, 242, 254, 0.1) !important;
-      width: 32px !important;
-      height: 32px !important;
-      border-radius: 8px !important;
-      flex-shrink: 0 !important;
-    }
-  }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -108,9 +50,9 @@
           <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">role</span> = <span class="t-s">"{{ hero.role }}"</span></div>
           <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">location</span> = <span class="t-s">"{{ hero.location }}"</span></div>
           <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">company</span> = <span class="t-s">"{{ hero.current_company }}"</span></div>
-          <div class="tl" style="margin-top:10px; line-height: 1.7;">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">stack</span> = [{% for tech in hero.get_tech_stack_list %}<span class="t-s">"{{ tech }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]</div>
-          <div class="tl" style="margin-top:10px; line-height: 1.7;">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">ai_expertise</span> = [{% for exp in hero.get_ai_expertise_list %}<span class="t-s">"{{ exp }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]</div>
-          <div class="tl" style="margin-top:10px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">open_to_work</span> = <span class="t-n">{% if hero.open_to_work %}True{% else %}False{% endif %}</span> <span class="t-c"># ✓</span></div>
+          <div class="tl" style="margin-top:4px; line-height: 1.45;">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">stack</span> = [{% for tech in hero.get_tech_stack_list %}<span class="t-s">"{{ tech }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]</div>
+          <div class="tl" style="margin-top:4px; line-height: 1.45;">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">ai_expertise</span> = [{% for exp in hero.get_ai_expertise_list %}<span class="t-s">"{{ exp }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]</div>
+          <div class="tl" style="margin-top:4px">&nbsp;&nbsp;&nbsp;&nbsp;self.<span class="t-v">open_to_work</span> = <span class="t-n">{% if hero.open_to_work %}True{% else %}False{% endif %}</span> <span class="t-c"># ✓</span></div>
 
         </div>
       </div>
@@ -256,46 +198,32 @@
           </h3>
 
           <div class="proj-desc-wrap">
-            <div class="proj-desc {% if proj.description|length > 300 %}collapsible{% endif %}" id="proj-desc-{{ forloop.counter }}">
+            <div class="proj-desc" id="proj-desc-{{ forloop.counter }}">
               {{ proj.description }}
-            </div>
-            {% if proj.description|length > 300 %}
-            <button type="button" class="proj-learn-more-btn proj-learn-more-desktop" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
-              <span class="btn-text">Learn More</span>
-              <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
-            </button>
-            {% endif %}
-            <div class="proj-actions-row">
-              <button type="button" class="proj-learn-more-btn proj-learn-more-mobile" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
-                <span class="btn-text">Learn More</span>
-                <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
-              </button>
-              {% if proj.get_project_url != '#' %}
-              <a href="{{ proj.get_project_url }}" target="_blank" rel="noopener" class="proj-view-live-btn" onclick="event.stopPropagation()" aria-label="View live project {{ proj.title }}">
-                <span class="btn-text">View Live</span>
-                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10.5px;"></i>
-              </a>
-              {% endif %}
             </div>
           </div>
 
           <div class="proj-stack">
-            {% for tech in proj.get_technologies_list %}
+            {% for tech in proj.get_technologies_list|slice:":6" %}
             <span class="proj-tag">{{ tech }}</span>
             {% endfor %}
+            {% if proj.get_technologies_list|length > 6 %}
+            <span class="proj-tag proj-tag-more" onclick="openProjModal(event, '{{ proj.id }}')" title="Click to view all {{ proj.get_technologies_list|length }} technologies">+{{ proj.get_technologies_list|length|add:"-6" }} more</span>
+            {% endif %}
           </div>
 
-          {% if proj.get_project_url != '#' %}
-          <div class="proj-footer">
-            <a href="{{ proj.get_project_url }}" class="proj-read-link" onclick="event.stopPropagation()" style="text-decoration: none;" {% if not proj.blog_post and proj.link %}target="_blank" rel="noopener"{% endif %}>
-              {% if proj.blog_post %}
-              Read Article <i class="fa-solid fa-arrow-right-long"></i>
-              {% else %}
-              View Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
-              {% endif %}
+          <div class="proj-actions-row">
+            <button type="button" class="proj-learn-more-btn proj-learn-more-mobile" onclick="openProjModal(event, '{{ proj.id }}')" aria-label="Learn more about {{ proj.title }}">
+              <span class="btn-text">Learn More</span>
+              <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
+            </button>
+            {% if proj.get_project_url != '#' %}
+            <a href="{{ proj.get_project_url }}" target="_blank" rel="noopener" class="proj-view-live-btn" onclick="event.stopPropagation()" aria-label="View live project {{ proj.title }}">
+              <span class="btn-text">View Live</span>
+              <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10.5px;"></i>
             </a>
+            {% endif %}
           </div>
-          {% endif %}
         </div>
       </div>
       {% endfor %}
@@ -382,49 +310,31 @@
             </h3>
 
             <div class="wf-desc-wrap">
-              <div class="wf-desc {% if wf.description|length > 250 %}collapsible{% endif %}" id="wf-desc-{{ wf.id }}">
+              <div class="wf-desc" id="wf-desc-{{ wf.id }}">
                 {{ wf.description }}
-              </div>
-              {% if wf.description|length > 250 %}
-              <button type="button" class="wf-learn-more-btn wf-learn-more-desktop" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
-                <span class="btn-text">Learn More</span>
-                <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
-              </button>
-              {% endif %}
-              <div class="wf-actions-row">
-                <button type="button" class="wf-learn-more-btn wf-learn-more-mobile" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
-                  <span class="btn-text">Learn More</span>
-                  <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
-                </button>
-                {% if wf.link %}
-                <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-view-live-btn" onclick="event.stopPropagation()" aria-label="View live workflow {{ wf.title }}">
-                  <span class="btn-text">View Live</span>
-                  <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i>
-                </a>
-                {% endif %}
               </div>
             </div>
           </div>
 
           <div class="wf-body-bottom">
             <div class="wf-tech-stack">
-              {% for tech in wf.get_technologies_list %}
+              {% for tech in wf.get_technologies_list|slice:":5" %}
               <span class="wf-tech-tag">{{ tech }}</span>
               {% endfor %}
+              {% if wf.get_technologies_list|length > 5 %}
+              <span class="wf-tech-tag wf-tech-tag-more" onclick="openWfModal(event, '{{ wf.id }}')" title="Click to view all tools">+{{ wf.get_technologies_list|length|add:"-5" }} more</span>
+              {% endif %}
             </div>
 
-            <div class="wf-footer-row">
-              {% if wf.images.all %}
-              <button type="button" class="wf-view-gallery-btn" onclick="event.stopPropagation(); openWfLightbox('{{ wf.id }}', 0)">
-                <i class="fa-regular fa-image"></i> View Diagram{% if wf.images.count > 1 %}s ({{ wf.images.count }}){% endif %}
+            <div class="wf-actions-row">
+              <button type="button" class="wf-learn-more-btn wf-learn-more-mobile" onclick="openWfModal(event, '{{ wf.id }}')" aria-label="Learn more about {{ wf.title }}">
+                <span class="btn-text">Learn More</span>
+                <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
               </button>
-              {% else %}
-              <span></span>
-              {% endif %}
-
               {% if wf.link %}
-              <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-demo-link" onclick="event.stopPropagation()">
-                View Workflow <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <a href="{{ wf.link }}" target="_blank" rel="noopener noreferrer" class="wf-view-live-btn" onclick="event.stopPropagation()" aria-label="View live workflow {{ wf.title }}">
+                <span class="btn-text">View Live</span>
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px;"></i>
               </a>
               {% endif %}
             </div>
@@ -613,7 +523,7 @@
           <p class="contact-left-desc">{{ hero.contact_description }}</p>
           <div class="contact-grid">
             {% for method in contact_methods %}
-            <a href="{{ method.link }}" class="contact-item {% if method.is_full_width %}full-width{% else %}half-width{% endif %}" target="_blank" rel="noopener">
+            <a href="{{ method.link }}" class="contact-item {% if method.is_full_width %}full-width{% else %}half-width{% endif %}" title="{{ method.value }}" target="_blank" rel="noopener">
               <span class="contact-item-icon"><i class="{{ method.icon_class }}"></i></span>
               <span>{{ method.value }}</span>
             </a>
@@ -647,7 +557,7 @@
             </div>
             <div class="form-group">
               <label for="id_message">Message</label>
-              <textarea id="id_message" name="message" class="form-control" rows="5" placeholder="How can I help you?" required></textarea>
+              <textarea id="id_message" name="message" class="form-control" rows="3" placeholder="How can I help you?" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary submit-btn">Send Message <i class="fa-solid fa-paper-plane" style="margin-left: 8px;"></i></button>
           </form>
