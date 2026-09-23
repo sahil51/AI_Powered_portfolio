@@ -153,8 +153,8 @@ def chat_proxy_view(request):
             return JsonResponse(resp.json(), status=200)
         else:
             return JsonResponse({
-                'message': "I'm having a little trouble connecting right now. Please try again in a moment.",
-            }, status=resp.status_code)
+                'message': "Daisy is temporarily busy or reconnecting. Please send your message again in a moment!",
+            }, status=200)
     except http_requests.Timeout:
         return JsonResponse({
             'message': "Daisy is taking a moment to wake up on the server. Please send your message again in a few seconds!",
@@ -162,8 +162,8 @@ def chat_proxy_view(request):
         }, status=200)
     except Exception:
         return JsonResponse({
-            'message': "Sorry, unable to connect to the AI assistant right now.",
-        }, status=500)
+            'message': "Sorry, unable to connect to the AI assistant right now. Please try again in a moment.",
+        }, status=200)
 
 def contact_submit_view(request):
     if request.method == 'POST':

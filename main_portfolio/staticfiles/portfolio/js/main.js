@@ -415,12 +415,17 @@ function connectWebSocket() {
           body: payloadStr
         });
 
+        let resData = null;
+        try {
+          resData = await response.json();
+        } catch (_) {}
+
         if (!response.ok) {
-          throw new Error("Server error, please try again.");
+          const errMsg = (resData && resData.message) ? resData.message : "Daisy is taking a moment to connect. Please try again in a few seconds!";
+          throw new Error(errMsg);
         }
 
-        const resData = await response.json();
-        const responseText = resData.message;
+        const responseText = resData ? resData.message : "";
         const meetingProgress = resData.meeting_progress || null;
         const intentType = resData.intent || '';
 
