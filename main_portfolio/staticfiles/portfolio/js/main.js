@@ -2,24 +2,43 @@
    PORTFOLIO — MAIN.JS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-// TYPED ROLES — roles array is injected from Django template via window.TYPED_ROLES
-const roles = window.TYPED_ROLES || ['Backend Engineer'];
+// TYPED ROLES — dynamically fetched from Django via window.TYPED_ROLES
 let ri = 0, ci = 0, deleting = false;
 const el = document.getElementById('typed-role');
 
+function getActiveRoles() {
+  if (Array.isArray(window.TYPED_ROLES) && window.TYPED_ROLES.length > 0) {
+    return window.TYPED_ROLES;
+  }
+  return ['Backend & AI Developer'];
+}
+
 function type() {
   if (!el) return;
-  const cur = roles[ri];
+  const currentRoles = getActiveRoles();
+  const cur = currentRoles[ri % currentRoles.length] || '';
   if (!deleting) {
     el.textContent = cur.slice(0, ++ci);
-    if (ci === cur.length) { deleting = true; return setTimeout(type, 2000); }
+    if (ci >= cur.length) { deleting = true; return setTimeout(type, 2000); }
   } else {
     el.textContent = cur.slice(0, --ci);
-    if (ci === 0) { deleting = false; ri = (ri + 1) % roles.length; return setTimeout(type, 400); }
+    if (ci <= 0) {
+      deleting = false;
+      ci = 0;
+      ri = (ri + 1) % currentRoles.length;
+      return setTimeout(type, 400);
+    }
   }
   setTimeout(type, deleting ? 38 : 72);
 }
-type();
+
+// Start typing animation once DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', type);
+} else {
+  type();
+}
+
 
 // SCROLL REVEAL
 const obs = new IntersectionObserver((entries) => {
@@ -33,28 +52,103 @@ const obs = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-// COUNTER ANIMATION
-function animateCounter(el, target) {
-  let cur = 0;
+// COUNTER ANIMATION (Smooth Ease-Out on every page reload & scroll)
+function animateCounter(el) {
+  if (!el) return;
+  const rawTarget = el.dataset.target;
+  const target = parseInt(rawTarget, 10);
+  if (isNaN(target)) return;
   const showPlus = el.dataset.showPlus === 'true';
-  const step = Math.ceil(target / 40);
-  const timer = setInterval(() => {
-    cur = Math.min(cur + step, target);
-    el.textContent = cur + (showPlus ? '+' : '');
-    if (cur >= target) clearInterval(timer);
-  }, 40);
+
+  // Cancel any existing animation frame on this element
+  if (el._animFrame) {
+    cancelAnimationFrame(el._animFrame);
+    el._animFrame = null;
+  }
+
+  // Initial state on count start
+  el.textContent = '0' + (showPlus ? '+' : '');
+  el.classList.remove('pop');
+
+  const duration = 1600; // 1.6s smooth duration
+  let startTime = null;
+
+  function tick(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Ease-out cubic: 1 - (1 - progress)^3
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(easeOut * target);
+
+    el.textContent = current + (showPlus ? '+' : '');
+
+    if (progress < 1) {
+      el._animFrame = requestAnimationFrame(tick);
+    } else {
+      el.textContent = target + (showPlus ? '+' : '');
+      el.classList.add('pop');
+      setTimeout(() => el.classList.remove('pop'), 280);
+      el._animFrame = null;
+    }
+  }
+
+  el._animFrame = requestAnimationFrame(tick);
 }
 
+// 1. Observe stats for scroll-into-view if user reloaded while scrolled down
 const counterObs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
       const num = e.target.querySelector('.stat-num');
-      if (num) animateCounter(num, parseInt(num.dataset.target));
+      if (num && !num._hasAnimated) {
+        num._hasAnimated = true;
+        animateCounter(num);
+      }
       counterObs.unobserve(e.target);
     }
   });
-}, { threshold: 0.3 });
+}, { threshold: 0.05 });
+
 document.querySelectorAll('.stat').forEach(el => counterObs.observe(el));
+
+// 2. Guarantee smooth animation on every page reload and resize
+function initStatsOnReload() {
+  const statsBar = document.querySelector('.stats-bar');
+  if (!statsBar) return;
+
+  const rect = statsBar.getBoundingClientRect();
+  const isInView = rect.top < (window.innerHeight + 80) && rect.bottom >= -80;
+
+  if (isInView) {
+    setTimeout(() => {
+      document.querySelectorAll('.stat-num').forEach(num => {
+        if (!num._hasAnimated) {
+          num._hasAnimated = true;
+          animateCounter(num);
+        }
+      });
+    }, 200);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStatsOnReload);
+} else {
+  initStatsOnReload();
+}
+
+window.addEventListener('load', () => {
+  initStatsOnReload();
+});
+
+window.addEventListener('resize', () => {
+  const firstStat = document.querySelector('.stat-num');
+  if (firstStat && !firstStat._hasAnimated) {
+    initStatsOnReload();
+  }
+});
 
 // SCROLL PROGRESS BAR & ACTIVE NAV
 const sects = document.querySelectorAll('section[id]');
@@ -97,6 +191,36 @@ if (termCopyBtn) {
     }).catch(() => {});
   });
 }
+
+// FEATURED PROJECTS - LEARN MORE / COLLAPSE TOGGLE
+function toggleProjDesc(event, descId, btn) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const descEl = document.getElementById(descId);
+  if (!descEl) return;
+  const isExpanded = descEl.classList.contains('expanded');
+  const textSpan = btn.querySelector('.btn-text');
+  const icon = btn.querySelector('i');
+
+  if (isExpanded) {
+    descEl.classList.remove('expanded');
+    if (textSpan) textSpan.textContent = 'Learn More';
+    if (icon) {
+      icon.classList.remove('fa-chevron-up');
+      icon.classList.add('fa-chevron-down');
+    }
+  } else {
+    descEl.classList.add('expanded');
+    if (textSpan) textSpan.textContent = 'Show Less';
+    if (icon) {
+      icon.classList.remove('fa-chevron-down');
+      icon.classList.add('fa-chevron-up');
+    }
+  }
+}
+window.toggleProjDesc = toggleProjDesc;
 
 // PROACTIVE AI THOUGHT BUBBLE NUDGE
 setTimeout(() => {
@@ -883,18 +1007,27 @@ connectWebSocket();
     }, 800);
   }
 
+  bubble.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = document.getElementById('chatBtn');
+    if (btn) btn.click();
+  });
+
+  function syncOpenState() {
+    const open = isChatOpen();
+    document.body.classList.toggle('chat-is-open', open);
+    const btn = document.getElementById('chatBtn');
+    if (btn) btn.classList.toggle('chat-open-hidden', open);
+    if (open) hideOnOpen();
+    else reshowOnClose();
+  }
+
   if (chatWin) {
-    const observer = new MutationObserver(() => {
-      if (isChatOpen()) hideOnOpen();
-      else reshowOnClose();
-    });
+    const observer = new MutationObserver(syncOpenState);
     observer.observe(chatWin, { attributes: true, attributeFilter: ['class'] });
   }
   if (chatFs) {
-    const observer = new MutationObserver(() => {
-      if (isChatOpen()) hideOnOpen();
-      else reshowOnClose();
-    });
+    const observer = new MutationObserver(syncOpenState);
     observer.observe(chatFs, { attributes: true, attributeFilter: ['class'] });
   }
 })();

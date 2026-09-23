@@ -559,8 +559,10 @@ nav {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: clamp(75px, 8.5vh, 95px) 3vw clamp(24px, 3vh, 40px);
+  padding: clamp(75px, 8.5vh, 90px) 3vw clamp(20px, 3vh, 35px);
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -3958,9 +3960,15 @@ body.chat-is-open .floating-chat-btn {
 /* LAPTOP VIEWPORT & SHORT SCREENS (<= 850px height) */
 @media (max-height: 850px) and (min-width: 769px) {
   #hero {
-    min-height: auto;
-    padding-top: clamp(80px, 9vh, 96px);
-    padding-bottom: clamp(36px, 5vh, 55px);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: clamp(65px, 9vh, 80px);
+    padding-bottom: clamp(12px, 2.5vh, 25px);
+    box-sizing: border-box;
   }
   .hero-grid {
     gap: clamp(16px, 2.5vw, 32px);
@@ -4054,9 +4062,10 @@ body.chat-is-open .floating-chat-btn {
 /* 1b. PORTRAIT TABLETS (769px - 960px) */
 @media (max-width: 960px) and (min-width: 769px) {
   #hero {
-    min-height: auto;
-    padding-top: clamp(85px, 9vw, 105px);
-    padding-bottom: 44px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: clamp(75px, 9vw, 95px);
+    padding-bottom: 40px;
   }
 
   .hero-grid {
@@ -4103,8 +4112,9 @@ body.chat-is-open .floating-chat-btn {
   }
 
   #hero {
-    padding: 105px 4vw 60px;
-    min-height: auto;
+    padding: 95px 4vw 50px;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   h1 {
@@ -4288,7 +4298,9 @@ body.chat-is-open .floating-chat-btn {
   }
 
   #hero {
-    padding: 95px 16px 45px;
+    padding: 85px 16px 40px;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   h1 {
@@ -4626,7 +4638,9 @@ body.chat-is-open .floating-chat-btn {
   }
 
   #hero {
-    padding: 85px 10px 36px;
+    padding: 80px 10px 30px;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   h1 {
