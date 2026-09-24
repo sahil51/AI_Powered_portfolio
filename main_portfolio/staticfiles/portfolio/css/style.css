@@ -4059,29 +4059,36 @@ body.chat-is-open .floating-chat-btn {
   }
 }
 
-/* 1b. PORTRAIT TABLETS (769px - 960px) */
-@media (max-width: 960px) and (min-width: 769px) {
+/* 1b. PORTRAIT TABLETS & ALL MOBILE DEVICES (<= 960px) */
+@media (max-width: 960px) {
   #hero {
     min-height: 100vh;
     min-height: 100dvh;
-    padding-top: clamp(75px, 9vw, 95px);
-    padding-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: clamp(75px, 8.5vh, 95px);
+    padding-bottom: clamp(24px, 3vh, 40px);
+    overflow: visible;
   }
 
   .hero-grid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: clamp(20px, 3vh, 32px);
     max-width: 680px;
     margin: 0 auto;
-  }
-
-  .hero-text-col {
-    order: 1;
-    text-align: left;
+    width: 100%;
   }
 
   .hero-term-col {
+    order: 1;
+    width: 100%;
+  }
+
+  .hero-text-col {
     order: 2;
+    text-align: left;
     width: 100%;
   }
 
@@ -4112,9 +4119,40 @@ body.chat-is-open .floating-chat-btn {
   }
 
   #hero {
-    padding: 95px 4vw 50px;
+    padding: clamp(70px, 8.5vh, 88px) 4vw clamp(20px, 3vh, 36px);
     min-height: 100vh;
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 2.4vh, 24px);
+    max-width: 580px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-term-col {
+    order: 1;
+    width: 100%;
+  }
+
+  .hero-text-col {
+    order: 2;
+    width: 100%;
+    text-align: left;
+  }
+
+  .terminal {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
   }
 
   h1 {
@@ -4298,14 +4336,70 @@ body.chat-is-open .floating-chat-btn {
   }
 
   #hero {
-    padding: 85px 16px 40px;
+    padding: clamp(68px, 8vh, 80px) 16px clamp(16px, 2.5vh, 28px);
     min-height: 100vh;
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: clamp(14px, 2vh, 18px);
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-term-col {
+    order: 1;
+    width: 100%;
+  }
+
+  .hero-text-col {
+    order: 2;
+    width: 100%;
+    text-align: left;
+  }
+
+  .terminal {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: 11.5px;
+    margin-bottom: 6px;
+    letter-spacing: 1.8px;
   }
 
   h1 {
-    font-size: clamp(28px, 9vw, 38px);
+    font-size: clamp(26px, 7.8vw, 34px);
     letter-spacing: -0.8px;
+    margin-bottom: 2px;
+    line-height: 1.15;
+  }
+
+  .name-sub {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .role-line {
+    font-size: clamp(15.5px, 4vw, 19px);
+    min-height: auto;
+    margin-bottom: 8px;
+  }
+
+  .hero-desc {
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin-bottom: 14px;
   }
 
   .btn-row {
@@ -4313,8 +4407,8 @@ body.chat-is-open .floating-chat-btn {
     flex-direction: column;
     width: 100%;
     max-width: 100%;
-    gap: 10px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 16px;
   }
 
   .btn-row .btn {
@@ -4322,8 +4416,8 @@ body.chat-is-open .floating-chat-btn {
     max-width: 100%;
     justify-content: center;
     text-align: center;
-    font-size: 15px;
-    padding: 12px 18px;
+    font-size: 14px;
+    padding: 10px 16px;
     box-sizing: border-box;
   }
 
@@ -4638,9 +4732,36 @@ body.chat-is-open .floating-chat-btn {
   }
 
   #hero {
-    padding: 80px 10px 30px;
+    padding: clamp(60px, 7.5vh, 72px) 10px 20px;
     min-height: 100vh;
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .hero-term-col {
+    order: 1;
+    width: 100%;
+  }
+
+  .hero-text-col {
+    order: 2;
+    width: 100%;
+  }
+
+  .terminal {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
   }
 
   h1 {
