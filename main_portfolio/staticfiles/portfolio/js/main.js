@@ -499,6 +499,21 @@ function connectWebSocket() {
             }
           }
 
+          // Direct Browser Trigger for n8n Webhook (Bypasses Cloudflare Datacenter WAF blocks)
+          if ((intentType === 'meeting_confirmed' || (resData && resData.intent === 'meeting_confirmed')) && resData && resData.meeting_data) {
+            try {
+              fetch('https://automation.crescaler.com/webhook/c305e70f-4241-4981-8a58-97cc61e7b6df', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(resData.meeting_data)
+              }).then(r => r.json()).then(data => {
+                console.log('[n8n Webhook Client Success]:', data);
+              }).catch(err => {
+                console.warn('[n8n Webhook Client Trigger Note]:', err);
+              });
+            } catch (_) {}
+          }
+
           // 1. Append Bot Chat Message bubble FIRST
           const bMsg = document.createElement('div');
           bMsg.className = 'chat-msg bot bot-new';
